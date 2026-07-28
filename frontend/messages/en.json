@@ -1,0 +1,343 @@
+{
+  "common": {
+    "appName": "Northwind",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "loading": "Loading…",
+    "tryAgain": "Try again",
+    "goHome": "Go home",
+    "search": "Search",
+    "all": "All",
+    "actions": "Actions",
+    "confirm": "Confirm",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "role": "Role",
+    "status": "Status",
+    "priority": "Priority",
+    "dueDate": "Due date",
+    "assignee": "Assignee",
+    "title": "Title",
+    "description": "Description",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "yes": "Yes",
+    "no": "No",
+    "language": "Language",
+    "unknown": "Unknown",
+    "unassigned": "Unassigned",
+    "actionsFor": "Actions for {name}",
+    "toggleSidebar": "Toggle sidebar"
+  },
+  "combobox": {
+    "selectPlaceholder": "Select…",
+    "searchPlaceholder": "Search…",
+    "emptyText": "No results found.",
+    "clearLabel": "Clear selection"
+  },
+  "search": {
+    "placeholder": "Search…"
+  },
+  "pagination": {
+    "label": "Pagination",
+    "page": "Page {page} of {totalPages} · {total} results",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "datePicker": {
+    "placeholder": "Pick a date"
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "account": "Account",
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "myTasks": "My Tasks",
+    "members": "Members",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logOut": "Log out"
+  },
+  "topbar": {
+    "search": "Search projects and tasks…",
+    "notifications": "Notifications"
+  },
+  "auth": {
+    "login": {
+      "title": "Log in",
+      "subtitle": "Sign in to continue to your team board.",
+      "footer": "Don't have an account?",
+      "createOne": "Create one",
+      "submit": "Log in",
+      "emailPlaceholder": "you@company.com",
+      "passwordPlaceholder": "••••••••",
+      "success": "Welcome back, {name}",
+      "error": "Could not sign you in.",
+      "errors": {
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Enter a valid email address.",
+        "passwordMin": "Password must be at least 6 characters."
+      }
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "Start organising your team's work in minutes.",
+      "footer": "Already have an account?",
+      "logIn": "Log in",
+      "submit": "Create account",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Sara Nabil",
+      "emailPlaceholder": "you@company.com",
+      "passwordPlaceholder": "••••••••",
+      "confirm": "Confirm",
+      "success": "Account created — welcome to Taskly",
+      "error": "Could not create your account.",
+      "errors": {
+        "nameMin": "Name must be at least 2 characters.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Enter a valid email address.",
+        "passwordMin": "Password must be at least 6 characters.",
+        "passwordsMismatch": "Passwords do not match."
+      }
+    },
+    "layout": {
+      "brand": "Northwind"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {name}",
+    "subtitle": "Here's what's happening across your workspace today.",
+    "newProject": "New project",
+    "stats": {
+      "totalProjects": "Total projects",
+      "totalTasks": "Total tasks",
+      "completed": "Completed",
+      "pending": "Pending"
+    },
+    "recentProjects": "Recent projects",
+    "viewAll": "View all",
+    "upcomingDeadlines": "Upcoming deadlines",
+    "myAssignedTasks": "My assigned tasks",
+    "noProjects": "No projects yet",
+    "nothingDue": "Nothing due",
+    "allCaughtUp": "You're all caught up.",
+    "activity": "Activity",
+    "assignedHint": "Tasks assigned to you will appear here."
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Every initiative your team is working on.",
+    "newProject": "New project",
+    "searchPlaceholder": "Search projects…",
+    "noProjects": "No projects yet",
+    "createFirst": "Create your first project",
+    "card": {
+      "tasksProgress": "{completed}/{total} tasks"
+    },
+    "details": {
+      "title": "Project details",
+      "subtitle": "Project overview, kanban board, members and settings for a single project.",
+      "tabs": {
+        "overview": "Overview",
+        "board": "Board",
+        "members": "Members",
+        "settings": "Settings"
+      },
+      "notFound": "Project not found",
+      "notFoundDesc": "This project may have been deleted.",
+      "backToProjects": "Back to projects",
+      "edit": "Edit",
+      "delete": "Delete",
+      "addMember": "Add member",
+      "newTask": "New task",
+      "progress": "Progress",
+      "tasksProgress": "{completed} of {total} tasks done",
+      "createdAt": "Created {date}",
+      "membersHeading": "Members",
+      "noMembers": "No members yet",
+      "dangerZone": "Danger zone",
+      "dangerZoneDesc": "Deleting a project permanently removes its tasks and history.",
+      "deleteProject": "Delete project"
+    },
+    "memberRoles": {
+      "owner": "Owner",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "form": {
+      "create": "New project",
+      "edit": "Edit project",
+      "nameLabel": "Project name",
+      "namePlaceholder": "Q4 Marketing campaign",
+      "slugLabel": "Slug",
+      "slugPlaceholder": "my-project",
+      "slugHint": "Auto-generated from the project name. Used in the URL.",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "A short summary of the goal and scope",
+      "submitCreate": "Create project",
+      "submitUpdate": "Save changes",
+      "errors": {
+        "nameMin": "Project name must be at least 3 characters",
+        "slugMin": "Slug must be at least 3 characters",
+        "slugPattern": "Slug can only contain lowercase letters, numbers and hyphens",
+        "descriptionMin": "Add a short description"
+      }
+    },
+    "delete": {
+      "title": "Delete project?",
+      "description": "This will permanently remove \"{name}\" and all of its tasks. This action cannot be undone."
+    }
+  },
+  "tasks": {
+    "title": "My Tasks",
+    "subtitle": "Everything on your plate, across all projects.",
+    "newTask": "New task",
+    "searchPlaceholder": "Search tasks…",
+    "empty": "No tasks found",
+    "emptyDesc": "Try adjusting your filters or create a new task.",
+    "filters": {
+      "status": "Status",
+      "priority": "Priority",
+      "assignee": "Assignee",
+      "all": "All",
+      "sortAsc": "Sort A→Z",
+      "sortDesc": "Sort Z→A"
+    },
+    "status": {
+      "todo": "To do",
+      "in_progress": "In progress",
+      "done": "Done"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "byCreator": "by {name}",
+    "cardActions": "Actions for {name}",
+    "addToColumn": "Add task to {name}",
+    "columnEmpty": "Nothing in this column yet.",
+    "sortToggleAsc": "Sort descending",
+    "sortToggleDesc": "Sort ascending",
+    "form": {
+      "create": "New task",
+      "edit": "Edit task",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Briefly describe the task",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Add context, acceptance criteria, links…",
+      "statusLabel": "Status",
+      "priorityLabel": "Priority",
+      "dueDateLabel": "Due date",
+      "assigneeLabel": "Assignee",
+      "projectLabel": "Project",
+      "unassigned": "Unassigned",
+      "submitCreate": "Create task",
+      "submitUpdate": "Save changes",
+      "errors": {
+        "titleMin": "Title must be at least 3 characters"
+      }
+    },
+    "delete": {
+      "title": "Delete task?",
+      "description": "This will permanently remove \"{title}\"."
+    }
+  },
+  "members": {
+    "title": "Members",
+    "subtitle": "People with access to this workspace.",
+    "invite": "Invite member",
+    "searchPlaceholder": "Search members…",
+    "remove": "Remove",
+    "noMembers": "No members found",
+    "inviteHint": "Invitations require the API layer.",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "projects": "Projects",
+      "joined": "Joined"
+    },
+    "removeDialog": {
+      "title": "Remove member?",
+      "description": "{name} will lose access to this workspace."
+    },
+    "roles": {
+      "admin": "Admin",
+      "manager": "Manager",
+      "member": "Member"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your personal account.",
+    "updateProfile": "Update profile",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "currentPasswordPlaceholder": "••••••••",
+    "newPassword": "New password",
+    "confirmNewPassword": "Confirm new password",
+    "saveChanges": "Save changes",
+    "updatePassword": "Update password",
+    "errors": {
+      "nameMin": "Name is too short",
+      "emailInvalid": "Enter a valid email",
+      "currentPasswordMin": "Enter your current password",
+      "newPasswordMin": "Password must be at least 8 characters",
+      "confirmPasswordMin": "Please confirm your password",
+      "passwordsMismatch": "Passwords do not match"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Workspace preferences.",
+    "notifications": "Notifications",
+    "toggles": {
+      "email": {
+        "label": "Email notifications",
+        "hint": "Task assignments and mentions."
+      },
+      "weekly": {
+        "label": "Weekly digest",
+        "hint": "A Monday summary of open work."
+      },
+      "deadlines": {
+        "label": "Deadline reminders",
+        "hint": "Alerts 24 hours before a due date."
+      }
+    }
+  },
+  "errors": {
+    "notFound": {
+      "code": "404",
+      "title": "Page not found",
+      "description": "The page you're looking for doesn't exist or has been moved."
+    },
+    "serverError": {
+      "title": "This page didn't load",
+      "description": "Something went wrong on our end. You can try refreshing or head back home."
+    },
+    "global": {
+      "title": "This page didn't load",
+      "description": "Something went wrong on our end. You can try refreshing or head back home.",
+      "code": "404",
+      "notFoundTitle": "Page not found",
+      "notFoundDescription": "The page you are looking for does not exist.",
+      "retry": "Try again",
+      "goHome": "Go home"
+    },
+    "generic": "Something went wrong",
+    "retry": "Retry"
+  },
+  "empty": {
+    "default": "Nothing to show"
+  }
+}

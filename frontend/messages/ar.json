@@ -1,0 +1,343 @@
+{
+  "common": {
+    "appName": "نورثويند",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "update": "تحديث",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "back": "رجوع",
+    "loading": "جارٍ التحميل…",
+    "tryAgain": "حاول مرة أخرى",
+    "goHome": "الصفحة الرئيسية",
+    "search": "بحث",
+    "all": "الكل",
+    "actions": "إجراءات",
+    "confirm": "تأكيد",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "role": "الدور",
+    "status": "الحالة",
+    "priority": "الأولوية",
+    "dueDate": "تاريخ الاستحقاق",
+    "assignee": "المسند إليه",
+    "title": "العنوان",
+    "description": "الوصف",
+    "createdAt": "تاريخ الإنشاء",
+    "updatedAt": "تاريخ التحديث",
+    "yes": "نعم",
+    "no": "لا",
+    "language": "اللغة",
+    "unknown": "غير معروف",
+    "unassigned": "غير مسند",
+    "actionsFor": "إجراءات {name}",
+    "toggleSidebar": "تبديل الشريط الجانبي"
+  },
+  "combobox": {
+    "selectPlaceholder": "اختر…",
+    "searchPlaceholder": "بحث…",
+    "emptyText": "لا توجد نتائج.",
+    "clearLabel": "مسح التحديد"
+  },
+  "search": {
+    "placeholder": "بحث…"
+  },
+  "pagination": {
+    "label": "ترقيم الصفحات",
+    "page": "الصفحة {page} من {totalPages} · {total} نتيجة",
+    "previous": "السابق",
+    "next": "التالي"
+  },
+  "datePicker": {
+    "placeholder": "اختر تاريخًا"
+  },
+  "nav": {
+    "workspace": "مساحة العمل",
+    "account": "الحساب",
+    "dashboard": "لوحة التحكم",
+    "projects": "المشاريع",
+    "myTasks": "مهامي",
+    "members": "الأعضاء",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "logOut": "تسجيل الخروج"
+  },
+  "topbar": {
+    "search": "ابحث في المشاريع والمهام…",
+    "notifications": "الإشعارات"
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "سجّل الدخول للمتابعة إلى لوحة فريقك.",
+      "footer": "ليس لديك حساب؟",
+      "createOne": "أنشئ واحدًا",
+      "submit": "تسجيل الدخول",
+      "emailPlaceholder": "you@company.com",
+      "passwordPlaceholder": "••••••••",
+      "success": "أهلاً بعودتك يا {name}",
+      "error": "تعذّر تسجيل دخولك.",
+      "errors": {
+        "emailRequired": "البريد الإلكتروني مطلوب.",
+        "emailInvalid": "أدخل عنوان بريد إلكتروني صالح.",
+        "passwordMin": "يجب أن تكون كلمة المرور 6 أحرف على الأقل."
+      }
+    },
+    "register": {
+      "title": "أنشئ حسابك",
+      "subtitle": "ابدأ في تنظيم عمل فريقك في دقائق.",
+      "footer": "لديك حساب بالفعل؟",
+      "logIn": "تسجيل الدخول",
+      "submit": "إنشاء حساب",
+      "fullName": "الاسم الكامل",
+      "fullNamePlaceholder": "سارة نبيل",
+      "emailPlaceholder": "you@company.com",
+      "passwordPlaceholder": "••••••••",
+      "confirm": "تأكيد",
+      "success": "تم إنشاء الحساب — أهلاً بك في تاسكلي",
+      "error": "تعذّر إنشاء حسابك.",
+      "errors": {
+        "nameMin": "يجب أن يكون الاسم حرفين على الأقل.",
+        "emailRequired": "البريد الإلكتروني مطلوب.",
+        "emailInvalid": "أدخل عنوان بريد إلكتروني صالح.",
+        "passwordMin": "يجب أن تكون كلمة المرور 6 أحرف على الأقل.",
+        "passwordsMismatch": "كلمتا المرور غير متطابقتين."
+      }
+    },
+    "layout": {
+      "brand": "نورثويند"
+    }
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "أهلاً بعودتك يا {name}",
+    "subtitle": "إليك ما يحدث في مساحة عملك اليوم.",
+    "newProject": "مشروع جديد",
+    "stats": {
+      "totalProjects": "إجمالي المشاريع",
+      "totalTasks": "إجمالي المهام",
+      "completed": "المكتملة",
+      "pending": "قيد الانتظار"
+    },
+    "recentProjects": "أحدث المشاريع",
+    "viewAll": "عرض الكل",
+    "upcomingDeadlines": "المواعيد النهائية القادمة",
+    "myAssignedTasks": "مهامي المسندة إليّ",
+    "noProjects": "لا توجد مشاريع بعد",
+    "nothingDue": "لا يوجد شيء مستحق",
+    "allCaughtUp": "أنت على اطلاع بكل شيء.",
+    "activity": "النشاط",
+    "assignedHint": "ستظهر المهام المسندة إليك هنا."
+  },
+  "projects": {
+    "title": "المشاريع",
+    "subtitle": "كل المبادرات التي يعمل عليها فريقك.",
+    "newProject": "مشروع جديد",
+    "searchPlaceholder": "ابحث في المشاريع…",
+    "noProjects": "لا توجد مشاريع بعد",
+    "createFirst": "أنشئ مشروعك الأول",
+    "card": {
+      "tasksProgress": "{completed}/{total} مهمة"
+    },
+    "details": {
+      "title": "تفاصيل المشروع",
+      "subtitle": "نظرة عامة على المشروع ولوحة كانبان والأعضاء والإعدادات لمشروع واحد.",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "board": "اللوحة",
+        "members": "الأعضاء",
+        "settings": "الإعدادات"
+      },
+      "notFound": "المشروع غير موجود",
+      "notFoundDesc": "ربما تم حذف هذا المشروع.",
+      "backToProjects": "العودة إلى المشاريع",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "addMember": "إضافة عضو",
+      "newTask": "مهمة جديدة",
+      "progress": "التقدم",
+      "tasksProgress": "تم إكمال {completed} من {total} مهمة",
+      "createdAt": "أُنشئ في {date}",
+      "membersHeading": "الأعضاء",
+      "noMembers": "لا يوجد أعضاء بعد",
+      "dangerZone": "منطقة الخطر",
+      "dangerZoneDesc": "سيؤدي حذف المشروع إلى إزالة مهامه وسجله نهائيًا.",
+      "deleteProject": "حذف المشروع"
+    },
+    "memberRoles": {
+      "owner": "مالك",
+      "editor": "محرر",
+      "viewer": "مشاهد"
+    },
+    "form": {
+      "create": "مشروع جديد",
+      "edit": "تعديل المشروع",
+      "nameLabel": "اسم المشروع",
+      "namePlaceholder": "حملة التسويق للربع الرابع",
+      "slugLabel": "المعرّف",
+      "slugPlaceholder": "my-project",
+      "slugHint": "يُولَّد تلقائيًا من اسم المشروع. يُستخدم في عنوان URL.",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "ملخص موجز للهدف والنطاق",
+      "submitCreate": "إنشاء المشروع",
+      "submitUpdate": "حفظ التغييرات",
+      "errors": {
+        "nameMin": "يجب أن يكون اسم المشروع 3 أحرف على الأقل",
+        "slugMin": "يجب أن يكون المعرّف 3 أحرف على الأقل",
+        "slugPattern": "يجب أن يحتوي المعرّف على حروف لاتينية صغيرة وأرقام وشرطات فقط",
+        "descriptionMin": "أضف وصفًا مختصرًا"
+      }
+    },
+    "delete": {
+      "title": "حذف المشروع؟",
+      "description": "سيؤدي هذا إلى إزالة \"{name}\" وجميع مهامه نهائيًا. لا يمكن التراجع عن هذا الإجراء."
+    }
+  },
+  "tasks": {
+    "title": "مهامي",
+    "subtitle": "كل ما في قائمتك عبر جميع المشاريع.",
+    "newTask": "مهمة جديدة",
+    "searchPlaceholder": "ابحث في المهام…",
+    "empty": "لم يتم العثور على مهام",
+    "emptyDesc": "حاول تعديل الفلاتر أو إنشاء مهمة جديدة.",
+    "filters": {
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "assignee": "المسند إليه",
+      "all": "الكل",
+      "sortAsc": "ترتيب تصاعدي",
+      "sortDesc": "ترتيب تنازلي"
+    },
+    "status": {
+      "todo": "للقيام",
+      "in_progress": "قيد التنفيذ",
+      "done": "مكتملة"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية",
+      "urgent": "عاجلة"
+    },
+    "byCreator": "بواسطة {name}",
+    "cardActions": "إجراءات {name}",
+    "addToColumn": "إضافة مهمة إلى {name}",
+    "columnEmpty": "لا يوجد شيء في هذا العمود بعد.",
+    "sortToggleAsc": "ترتيب تنازلي",
+    "sortToggleDesc": "ترتيب تصاعدي",
+    "form": {
+      "create": "مهمة جديدة",
+      "edit": "تعديل المهمة",
+      "titleLabel": "العنوان",
+      "titlePlaceholder": "صِف المهمة بإيجاز",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "أضف السياق ومعايير القبول والروابط…",
+      "statusLabel": "الحالة",
+      "priorityLabel": "الأولوية",
+      "dueDateLabel": "تاريخ الاستحقاق",
+      "assigneeLabel": "المسند إليه",
+      "projectLabel": "المشروع",
+      "unassigned": "غير مسند",
+      "submitCreate": "إنشاء المهمة",
+      "submitUpdate": "حفظ التغييرات",
+      "errors": {
+        "titleMin": "يجب أن يكون العنوان 3 أحرف على الأقل"
+      }
+    },
+    "delete": {
+      "title": "حذف المهمة؟",
+      "description": "سيؤدي هذا إلى إزالة \"{title}\" نهائيًا."
+    }
+  },
+  "members": {
+    "title": "الأعضاء",
+    "subtitle": "الأشخاص الذين لديهم صلاحية الوصول إلى مساحة العمل هذه.",
+    "invite": "دعوة عضو",
+    "searchPlaceholder": "ابحث في الأعضاء…",
+    "remove": "إزالة",
+    "noMembers": "لم يتم العثور على أعضاء",
+    "inviteHint": "تتطلب الدعوات طبقة API.",
+    "table": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "projects": "المشاريع",
+      "joined": "انضم في"
+    },
+    "removeDialog": {
+      "title": "إزالة العضو؟",
+      "description": "سيفقد {name} صلاحية الوصول إلى مساحة العمل هذه."
+    },
+    "roles": {
+      "admin": "مسؤول",
+      "manager": "مدير",
+      "member": "عضو"
+    }
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "subtitle": "أدِر حسابك الشخصي.",
+    "updateProfile": "تحديث الملف الشخصي",
+    "changePassword": "تغيير كلمة المرور",
+    "currentPassword": "كلمة المرور الحالية",
+    "currentPasswordPlaceholder": "••••••••",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+    "saveChanges": "حفظ التغييرات",
+    "updatePassword": "تحديث كلمة المرور",
+    "errors": {
+      "nameMin": "الاسم قصير جدًا",
+      "emailInvalid": "أدخل بريدًا إلكترونيًا صالحًا",
+      "currentPasswordMin": "أدخل كلمة مرورك الحالية",
+      "newPasswordMin": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+      "confirmPasswordMin": "يرجى تأكيد كلمة المرور",
+      "passwordsMismatch": "كلمتا المرور غير متطابقتين"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "تفضيلات مساحة العمل.",
+    "notifications": "الإشعارات",
+    "toggles": {
+      "email": {
+        "label": "إشعارات البريد الإلكتروني",
+        "hint": "إسناد المهام والإشارات."
+      },
+      "weekly": {
+        "label": "ملخص أسبوعي",
+        "hint": "ملخص يوم الاثنين للعمل المفتوح."
+      },
+      "deadlines": {
+        "label": "تذكيرات المواعيد النهائية",
+        "hint": "تنبيهات قبل 24 ساعة من الموعد النهائي."
+      }
+    }
+  },
+  "errors": {
+    "notFound": {
+      "code": "404",
+      "title": "الصفحة غير موجودة",
+      "description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها."
+    },
+    "serverError": {
+      "title": "لم يتم تحميل هذه الصفحة",
+      "description": "حدث خطأ من جانبنا. يمكنك محاولة التحديث أو العودة إلى الصفحة الرئيسية."
+    },
+    "global": {
+      "title": "لم يتم تحميل هذه الصفحة",
+      "description": "حدث خطأ من جانبنا. يمكنك محاولة التحديث أو العودة إلى الصفحة الرئيسية.",
+      "code": "404",
+      "notFoundTitle": "الصفحة غير موجودة",
+      "notFoundDescription": "الصفحة التي تبحث عنها غير موجودة.",
+      "retry": "حاول مرة أخرى",
+      "goHome": "الصفحة الرئيسية"
+    },
+    "generic": "حدث خطأ ما",
+    "retry": "إعادة المحاولة"
+  },
+  "empty": {
+    "default": "لا شيء للعرض"
+  }
+}
