@@ -117,8 +117,21 @@ app.use('/api', apiLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// API Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// API Documentation - Optimized for Vercel
+const swaggerOptions = {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Task Manager API Documentation',
+  swaggerOptions: {
+    persistAuthorization: true,
+  },
+};
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
+
+// Swagger JSON endpoint (useful for testing)
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -147,6 +160,12 @@ app.get('/', (req, res) => {
     message: 'Task Manager API',
     version: '1.0.0',
     documentation: '/api-docs',
+    endpoints: {
+      health: '/health',
+      swagger: '/api-docs',
+      api: '/api'
+    },
+    environment: process.env.NODE_ENV,
   });
 });
 

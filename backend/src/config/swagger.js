@@ -42,7 +42,7 @@ Alternatively, tokens can be sent as HTTP-only cookies.
         description: 'Development server',
       },
       {
-        url: process.env.API_URL || 'https://your-backend.onrender.com',
+        url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : (process.env.API_URL || 'https://your-backend.vercel.app'),
         description: 'Production server',
       },
     ],

@@ -10,6 +10,7 @@
     "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --detectOpenHandles --forceExit",
     "test:watch": "npm test -- --watch",
     "test:cloudinary": "node src/scripts/test-cloudinary.js",
+    "test:swagger": "node test-swagger.js",
     "seed": "node src/scripts/seed.js",
     "seed:verify": "node src/scripts/verify-seed.js",
     "security:audit": "npm audit",

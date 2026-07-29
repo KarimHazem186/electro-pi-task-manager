@@ -1,15 +1,10 @@
+# Vercel ignore file
 node_modules
 .env
 .env.local
-.DS_Store
+.env.*.local
 *.log
 coverage
-.nyc_output
 __tests__
 *.test.js
-test-*.http
-.vscode
-.idea
-*.md
-!README.md
-!VERCEL_DEPLOYMENT.md
+.git
