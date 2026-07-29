@@ -6,15 +6,16 @@ import {
   getMe,
   updateProfile,
   changePassword,
+  refreshToken,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/auth.js';
-import { validate } from '../middleware/validate.js';
+import { zodValidate } from '../middleware/zodValidate.js';
 import {
-  registerValidator,
-  loginValidator,
-  updateProfileValidator,
-  changePasswordValidator,
-} from '../validators/authValidator.js';
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+} from '../validators/zodSchemas.js';
 
 const router = express.Router();
 
@@ -34,7 +35,6 @@ const router = express.Router();
  *               - name
  *               - email
  *               - password
- *               - confirmPassword
  *             properties:
  *               name:
  *                 type: string
@@ -42,13 +42,11 @@ const router = express.Router();
  *                 type: string
  *               password:
  *                 type: string
- *               confirmPassword:
- *                 type: string
  *     responses:
  *       201:
  *         description: User registered successfully
  */
-router.post('/register', registerValidator, validate, register);
+router.post('/register', zodValidate(registerSchema), register);
 
 /**
  * @swagger
@@ -56,12 +54,102 @@ router.post('/register', registerValidator, validate, register);
  *   post:
  *     summary: Login user
  *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
  */
-router.post('/login', loginValidator, validate, login);
+router.post('/login', zodValidate(loginSchema), login);
 
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags: [Auth]
+ *     description: Get a new access token using refresh token from cookie or request body
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: Refresh token (optional if provided in cookie)
+ *     responses:
+ *       200:
+ *         description: New access token generated
+ */
+router.post('/refresh', refreshToken);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
 router.post('/logout', protect, logout);
+
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User data retrieved
+ */
 router.get('/me', protect, getMe);
-router.patch('/profile', protect, updateProfileValidator, validate, updateProfile);
-router.post('/change-password', protect, changePasswordValidator, validate, changePassword);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   patch:
+ *     summary: Update user profile
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ */
+router.patch('/profile', protect, zodValidate(updateProfileSchema), updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     summary: Change user password
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ */
+router.post('/change-password', protect, zodValidate(changePasswordSchema), changePassword);
 
 export default router;

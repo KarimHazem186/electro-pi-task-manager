@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 
 import { Providers } from "@/app/providers";
 import { localeDirs, routing } from "@/i18n/routing";
+import { DebugInfo } from "@/components/debug-info";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -18,7 +19,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const isAr = locale === "ar";
   return {
-    title: isAr ? "نورثويند للمهام" : "Northwind Tasks",
+    title: isAr ? "مدير المهام" : "Task Manager",
     description: isAr
       ? "تتبع المشاريع والمهام المسندة والمواعيد النهائية ونشاط الفريق في نظرة واحدة على مساحة العمل."
       : "Track projects, assigned tasks, deadlines and team activity in one workspace overview.",
@@ -48,6 +49,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
+        <DebugInfo />
       </body>
     </html>
   );

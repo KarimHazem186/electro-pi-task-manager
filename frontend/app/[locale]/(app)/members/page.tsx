@@ -64,7 +64,8 @@ export default function MembersPage() {
         <Skeleton className="h-72 rounded-xl" />
       ) : query.data?.data.length ? (
         <>
-          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-soft">
+          {/* Desktop Table View */}
+          <div className="hidden overflow-x-auto rounded-xl border border-border bg-card shadow-soft md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -111,6 +112,45 @@ export default function MembersPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Mobile Cards View */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {query.data.data.map((user) => (
+              <div
+                key={user.id}
+                className="rounded-xl border border-border bg-card p-4 shadow-soft"
+              >
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <UserAvatar user={user} className="size-10" />
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{user.name}</p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setRemoving(user)}
+                    className="shrink-0"
+                  >
+                    {t("remove")}
+                  </Button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="capitalize">
+                    {t(`roles.${user.role}` as never)}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {user.projectsCount ?? 0} {t("table.projects").toLowerCase()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="mt-6">
             <DataPagination
               page={query.data.page}

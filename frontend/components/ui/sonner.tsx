@@ -1,11 +1,21 @@
 "use client";
+import { useEffect, useState } from "react";
 import { Toaster as Sonner } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const [dir, setDir] = useState<"ltr" | "rtl">("ltr");
+
+  useEffect(() => {
+    // Get direction from document
+    const htmlDir = document.documentElement.getAttribute("dir");
+    setDir(htmlDir === "rtl" ? "rtl" : "ltr");
+  }, []);
+
   return (
     <Sonner
+      dir={dir}
       className="toaster group"
       toastOptions={{
         classNames: {

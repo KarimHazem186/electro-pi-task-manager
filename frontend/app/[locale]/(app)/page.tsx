@@ -95,7 +95,7 @@ export default function DashboardPage() {
               Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="h-16 rounded-xl" />
               ))
-            ) : projects.data?.data.length ? (
+            ) : projects.data?.data?.length ? (
               projects.data.data.map((project) => {
                 const pct = project.taskCount
                   ? Math.round(
@@ -199,11 +199,12 @@ export default function DashboardPage() {
             <CardTitle className="text-base">{t("activity")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {activity.isLoading
-              ? Array.from({ length: 4 }).map((_, i) => (
+            {activity.isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-10 rounded-xl" />
               ))
-              : activity.data?.map((event) => (
+            ) : activity.data?.length ? (
+              activity.data.map((event) => (
                 <div key={event.id} className="flex min-w-0 gap-3">
                   <UserAvatar
                     user={event.actor}
@@ -211,7 +212,7 @@ export default function DashboardPage() {
                   />
                   <div className="min-w-0">
                     <p className="text-sm leading-snug">
-                      <span className="font-medium">{event.actor.name}</span>{" "}
+                      <span className="font-medium">{event.actor?.name}</span>{" "}
                       {event.action}{" "}
                       <span className="font-medium">{event.target}</span>
                     </p>
@@ -220,7 +221,10 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <EmptyState title={t("noActivity")} />
+            )}
           </CardContent>
         </Card>
       </div>

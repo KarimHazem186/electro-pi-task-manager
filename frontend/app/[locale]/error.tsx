@@ -16,7 +16,6 @@ export default function LocaleError({
   const tCommon = useTranslations("common");
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
     console.error(error);
   }, [error]);
 

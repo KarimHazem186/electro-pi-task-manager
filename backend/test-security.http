@@ -1,0 +1,405 @@
+### Task Manager API - Security Testing
+### Use this file with REST Client extension in VS Code
+
+@baseUrl = http://localhost:5000/api
+@contentType = application/json
+
+### Variables (update after login)
+@accessToken = your-access-token-here
+@refreshToken = your-refresh-token-here
+
+###############################################################################
+### AUTHENTICATION TESTS
+###############################################################################
+
+### 1. Register - Valid Request
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Security Test User",
+  "email": "security@test.com",
+  "password": "SecurePass123"
+}
+
+### 2. Register - Invalid Email (Should Fail)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Test User",
+  "email": "invalid-email",
+  "password": "SecurePass123"
+}
+
+### 3. Register - Short Password (Should Fail)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Test User",
+  "email": "test2@test.com",
+  "password": "123"
+}
+
+### 4. Register - Short Name (Should Fail)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "A",
+  "email": "test3@test.com",
+  "password": "SecurePass123"
+}
+
+### 5. Login - Valid Credentials
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "security@test.com",
+  "password": "SecurePass123"
+}
+
+### 6. Login - Invalid Credentials (Should Fail)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "security@test.com",
+  "password": "WrongPassword"
+}
+
+### 7. Get Current User (Protected Route)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{accessToken}}
+
+### 8. Get Current User - No Token (Should Fail with 401)
+GET {{baseUrl}}/auth/me
+
+### 9. Refresh Access Token
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 10. Update Profile
+PATCH {{baseUrl}}/auth/profile
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated Name"
+}
+
+### 11. Change Password
+POST {{baseUrl}}/auth/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "currentPassword": "SecurePass123",
+  "newPassword": "NewSecurePass456"
+}
+
+### 12. Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+###############################################################################
+### SECURITY ATTACK TESTS
+###############################################################################
+
+### 13. MongoDB Injection Attempt (Should Fail)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": { "$gt": "" },
+  "password": { "$gt": "" }
+}
+
+### 14. MongoDB Injection in Project Name (Should be Sanitized)
+POST {{baseUrl}}/projects
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Test Project",
+  "description": { "$ne": null }
+}
+
+### 15. XSS Attempt in Name (Should be Sanitized)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "<script>alert('XSS')</script>",
+  "email": "xss@test.com",
+  "password": "password123"
+}
+
+### 16. SQL Injection Attempt (NoSQL, Should Fail)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "admin@test.com' OR '1'='1",
+  "password": "anything"
+}
+
+### 17. HTTP Parameter Pollution
+GET {{baseUrl}}/tasks?status=todo&status[$ne]=done
+Authorization: Bearer {{accessToken}}
+
+### 18. Long Input Attack (Should Fail Validation)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "A very long name that exceeds the maximum allowed length for a user name field which is set to 100 characters in the validation schema so this should definitely fail the validation check",
+  "email": "long@test.com",
+  "password": "password123"
+}
+
+###############################################################################
+### RATE LIMITING TESTS
+###############################################################################
+
+### 19. Rate Limit Test - Send Multiple Times Quickly
+### Run this request 6 times quickly (5th should pass, 6th should be rate limited)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "nonexistent@test.com",
+  "password": "wrongpassword"
+}
+
+###############################################################################
+### VALIDATION TESTS
+###############################################################################
+
+### 20. Create Project - Valid
+POST {{baseUrl}}/projects
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Security Test Project",
+  "description": "Testing security features"
+}
+
+### 21. Create Project - Missing Required Field (Should Fail)
+POST {{baseUrl}}/projects
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Test Project"
+}
+
+### 22. Create Project - Invalid Name Length (Should Fail)
+POST {{baseUrl}}/projects
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "name": "AB",
+  "description": "Too short name"
+}
+
+### 23. Create Task - Valid
+POST {{baseUrl}}/tasks
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Security Test Task",
+  "description": "Testing task creation",
+  "projectId": "507f1f77bcf86cd799439011",
+  "status": "todo",
+  "priority": "high"
+}
+
+### 24. Create Task - Invalid Status (Should Fail)
+POST {{baseUrl}}/tasks
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Test Task",
+  "description": "Testing",
+  "projectId": "507f1f77bcf86cd799439011",
+  "status": "invalid_status",
+  "priority": "high"
+}
+
+### 25. Create Task - Invalid Priority (Should Fail)
+POST {{baseUrl}}/tasks
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Test Task",
+  "description": "Testing",
+  "projectId": "507f1f77bcf86cd799439011",
+  "status": "todo",
+  "priority": "invalid_priority"
+}
+
+### 26. Create Task - Invalid Project ID Format (Should Fail)
+POST {{baseUrl}}/tasks
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Test Task",
+  "description": "Testing",
+  "projectId": "invalid-id-format",
+  "status": "todo",
+  "priority": "high"
+}
+
+### 27. Update Task - Valid
+PATCH {{baseUrl}}/tasks/507f1f77bcf86cd799439011
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Task Title",
+  "status": "in_progress"
+}
+
+### 28. Update Task - Invalid ID Format (Should Fail)
+PATCH {{baseUrl}}/tasks/invalid-id
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Updated Task Title"
+}
+
+###############################################################################
+### CORS AND HEADERS TESTS
+###############################################################################
+
+### 29. Check Security Headers
+GET {{baseUrl}}/../health
+
+### 30. OPTIONS Request (CORS Preflight)
+OPTIONS {{baseUrl}}/auth/login
+Origin: http://localhost:3000
+
+###############################################################################
+### TOKEN EXPIRATION TESTS
+###############################################################################
+
+### 31. Use Expired Access Token (Should Fail with TOKEN_EXPIRED)
+### Note: Wait 15 minutes after login or manually use expired token
+GET {{baseUrl}}/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTUxNjIzOTAyMn0.expired
+
+### 32. Refresh with Invalid Refresh Token (Should Fail)
+POST {{baseUrl}}/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "invalid.refresh.token"
+}
+
+###############################################################################
+### AUTHORIZATION TESTS
+###############################################################################
+
+### 33. Access Admin Route as Member (Should Fail with 403)
+### First create an admin-only endpoint to test this
+GET {{baseUrl}}/users
+Authorization: Bearer {{accessToken}}
+
+### 34. Add Project Member Without Permission (Should Fail)
+POST {{baseUrl}}/projects/507f1f77bcf86cd799439011/members
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+  "userId": "507f1f77bcf86cd799439012",
+  "role": "member"
+}
+
+###############################################################################
+### EDGE CASES
+###############################################################################
+
+### 35. Empty Request Body (Should Fail)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{}
+
+### 36. Null Values (Should Fail or Handle)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": null,
+  "email": null,
+  "password": null
+}
+
+### 37. Extra Fields (Should be Ignored)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Test User",
+  "email": "extra@test.com",
+  "password": "password123",
+  "extraField": "should be ignored",
+  "isAdmin": true
+}
+
+### 38. Unicode and Special Characters
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "测试用户 🚀",
+  "email": "unicode@test.com",
+  "password": "password123"
+}
+
+### 39. Very Long Email (Should Fail)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Test",
+  "email": "verylongemailaddressthatexceedsreasonablelimitsandshouldfailvalidation@verylongdomainname.com",
+  "password": "password123"
+}
+
+### 40. Case Sensitivity Test (Email should be lowercased)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Case Test",
+  "email": "CaseSensitive@TEST.COM",
+  "password": "password123"
+}
+
+###############################################################################
+### HEALTH AND STATUS
+###############################################################################
+
+### 41. Health Check
+GET http://localhost:5000/health
+
+### 42. API Documentation
+GET http://localhost:5000/api-docs
+
+### 43. Root Endpoint
+GET http://localhost:5000/

@@ -12,36 +12,41 @@ import {
 } from '../controllers/projectController.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { checkProjectAccess } from '../middleware/permissions.js';
-import { validate } from '../middleware/validate.js';
+import { zodValidate } from '../middleware/zodValidate.js';
 import {
-  createProjectValidator,
-  updateProjectValidator,
-  addMemberValidator,
-  projectIdValidator,
-} from '../validators/projectValidator.js';
+  createProjectSchema,
+  updateProjectSchema,
+  projectIdSchema,
+  addProjectMemberSchema,
+  removeProjectMemberSchema,
+} from '../validators/zodSchemas.js';
 
 const router = express.Router();
 
 router.use(protect); // All routes require authentication
 
 router.get('/', getProjects);
-router.post('/', createProjectValidator, validate, createProject);
+router.post('/', zodValidate(createProjectSchema), createProject);
 
 router.get('/by-slug/:slug', getProjectBySlug);
 
-router.get('/:id', projectIdValidator, validate, getProjectById);
-router.patch('/:id', projectIdValidator, updateProjectValidator, validate, updateProject);
-router.delete('/:id', projectIdValidator, validate, deleteProject);
+router.get('/:id', zodValidate(projectIdSchema), getProjectById);
+router.patch('/:id', zodValidate(updateProjectSchema), updateProject);
+router.delete('/:id', zodValidate(projectIdSchema), deleteProject);
 
 // Project members
 router.get('/:projectId/members', checkProjectAccess(), getProjectMembers);
 router.post(
   '/:projectId/members',
   checkProjectAccess('owner'),
-  addMemberValidator,
-  validate,
+  zodValidate(addProjectMemberSchema),
   addProjectMember
 );
-router.delete('/:projectId/members/:memberId', checkProjectAccess('owner'), removeProjectMember);
+router.delete(
+  '/:projectId/members/:memberId',
+  checkProjectAccess('owner'),
+  zodValidate(removeProjectMemberSchema),
+  removeProjectMember
+);
 
 export default router;

@@ -8,16 +8,15 @@ import type {
   User,
 } from "@/types";
 
-/** Auth endpoints. Mock resolvers stand in until the REST API exists. */
+/** Auth endpoints. Tokens are stored in HTTP-only cookies by the backend. */
 export const authService = {
   login: (payload: LoginPayload) =>
     resolve<User>(
       () => currentUser,
       async () => {
-        const response = await api.post<{ data: User; token: string }>("/auth/login", payload);
-        if (response.data.token) {
-          localStorage.setItem('token', response.data.token);
-        }
+        const response = await api.post<{ data: User }>("/auth/login", payload);
+        // Tokens are automatically stored in HTTP-only cookies by backend
+        // No need to handle tokens in frontend
         return response.data.data;
       },
     ),
@@ -26,10 +25,8 @@ export const authService = {
     resolve<User>(
       () => ({ ...currentUser, name: payload.name, email: payload.email }),
       async () => {
-        const response = await api.post<{ data: User; token: string }>("/auth/register", payload);
-        if (response.data.token) {
-          localStorage.setItem('token', response.data.token);
-        }
+        const response = await api.post<{ data: User }>("/auth/register", payload);
+        // Tokens are automatically stored in HTTP-only cookies by backend
         return response.data.data;
       },
     ),
@@ -38,8 +35,9 @@ export const authService = {
     resolve<void>(
       () => undefined,
       async () => {
+        // Backend clears the HTTP-only cookies
         await api.post("/auth/logout");
-        localStorage.removeItem('token');
+        // No localStorage to clean
       },
     ),
 

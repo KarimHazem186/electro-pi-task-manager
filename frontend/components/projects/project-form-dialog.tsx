@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getErrorTranslationKey } from "@/lib/api/error-handler";
 
 import {
   Dialog,
@@ -42,10 +43,10 @@ export function ProjectFormDialog({
   project?: Project | null;
   onSuccess?: () => void;
 }) {
-  const t = useTranslations("projects");
   const tForm = useTranslations("projects.form");
   const tCommon = useTranslations("common");
   const tErrors = useTranslations("projects.form.errors");
+  const tApiErrors = useTranslations("errors.api");
 
   const schema = useMemo(
     () =>
@@ -111,8 +112,10 @@ export function ProjectFormDialog({
       }
       onOpenChange(false);
       onSuccess?.();
-    } catch {
-      toast.error(tCommon("loading"));
+    } catch (err) {
+      const errorKey = getErrorTranslationKey(err);
+      const key = errorKey.replace("errors.api.", "");
+      toast.error(tApiErrors(key));
     }
   };
 

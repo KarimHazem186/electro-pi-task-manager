@@ -16,9 +16,9 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "Northwind Tasks",
+  title: "Task Manager",
   description:
-    "Track projects, assigned tasks, deadlines and team activity in one workspace overview.",
+    "Full-stack task management system with real-time collaboration and team workflows.",
   icons: { icon: "/favicon.ico" },
 };
 

@@ -4,17 +4,19 @@ A production-ready task management REST API built with Node.js, Express, and Mon
 
 ## 🚀 Features
 
-- ✅ **JWT Authentication** - Secure user authentication with JWT tokens
+- ✅ **JWT Authentication** - Dual-token system (access + refresh) with HTTP-only cookies
+- ✅ **Enhanced Security** - Helmet, CORS, rate limiting, MongoDB injection prevention, HPP protection
+- ✅ **Password Security** - bcrypt hashing with salt rounds
+- ✅ **Input Validation** - Zod schema validation on all endpoints
 - ✅ **Role-Based Access Control (RBAC)** - Admin, Manager, and Member roles
 - ✅ **Project Management** - Create, update, delete projects with member management
 - ✅ **Task Management** - Full CRUD operations with filtering, sorting, and search
 - ✅ **Real-time Updates** - Socket.IO for live task updates
 - ✅ **Audit Logging** - Track all status changes and important actions
-- ✅ **Input Validation** - Comprehensive validation with express-validator
 - ✅ **Error Handling** - Centralized error handling middleware
 - ✅ **API Documentation** - Interactive Swagger/OpenAPI documentation
-- ✅ **Rate Limiting** - Protection against API abuse
-- ✅ **Security** - Helmet, CORS, password hashing
+- ✅ **Rate Limiting** - Brute force protection (5 attempts per 15min on auth)
+- ✅ **HTTP-Only Cookies** - XSS and CSRF protection
 - ✅ **Pagination & Search** - Efficient data retrieval
 - ✅ **Docker Support** - Docker and Docker Compose configuration
 - ✅ **Automated Tests** - Jest and Supertest integration
@@ -50,11 +52,23 @@ Edit `.env` with your configuration:
 NODE_ENV=development
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/taskmanager
+
+# JWT Configuration (IMPORTANT: Change in production!)
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_EXPIRE=7d
+JWT_EXPIRE=15m
+JWT_REFRESH_SECRET=your-super-secret-refresh-jwt-key-change-this-in-production
+JWT_REFRESH_EXPIRE=7d
+COOKIE_EXPIRE=7
+
+# CORS
 FRONTEND_URL=http://localhost:3000
 SOCKET_CORS_ORIGIN=http://localhost:3000
 ```
+
+> **🔒 Security Note**: Use strong random secrets in production. Generate with:
+> ```bash
+> node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+> ```
 
 4. **Start MongoDB** (if running locally)
 ```bash
@@ -112,8 +126,9 @@ Interactive API documentation is available at:
 #### Authentication Endpoints
 ```
 POST   /api/auth/register       - Register new user
-POST   /api/auth/login          - Login user
-POST   /api/auth/logout         - Logout user
+POST   /api/auth/login          - Login user (sets HTTP-only cookies)
+POST   /api/auth/refresh        - Refresh access token
+POST   /api/auth/logout         - Logout user (clears cookies)
 GET    /api/auth/me             - Get current user
 PATCH  /api/auth/profile        - Update profile
 POST   /api/auth/change-password - Change password
@@ -164,6 +179,23 @@ npm run test:watch
 
 # Run tests with coverage
 npm test -- --coverage
+
+# Security audit
+npm run security:audit
+
+# Check for outdated packages
+npm run security:check
+```
+
+### Security Testing
+
+Use the provided `test-security.http` file with REST Client extension in VS Code, or:
+
+```bash
+# Test full authentication flow
+bash scripts/test-auth.sh  # (if available)
+
+# Or manually test with the 43 test cases in test-security.http
 ```
 
 ## 🗄️ Database Schema
@@ -233,10 +265,61 @@ npm test -- --coverage
 
 ## 🔒 Authentication & Authorization
 
-### JWT Token
-All protected routes require a JWT token in the Authorization header:
+### Dual-Token System
+The API uses a secure dual-token authentication system:
+
+- **Access Token**: Short-lived (15 minutes) - Used for API requests
+- **Refresh Token**: Long-lived (7 days) - Used to get new access tokens
+
+### Token Storage Options
+
+#### Option 1: HTTP-Only Cookies (Recommended for Web)
+Tokens are automatically stored in secure HTTP-only cookies:
+```javascript
+// Frontend - just include credentials
+fetch('http://localhost:5000/api/auth/login', {
+  method: 'POST',
+  credentials: 'include', // Important!
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password })
+});
 ```
-Authorization: Bearer <token>
+
+**Benefits:**
+- ✅ Protected from XSS attacks
+- ✅ Automatic CSRF protection (SameSite cookies)
+- ✅ No manual token management needed
+
+#### Option 2: Authorization Header (For Mobile Apps)
+Tokens are also returned in response body:
+```javascript
+// Response includes tokens
+{
+  "success": true,
+  "data": { /* user */ },
+  "tokens": {
+    "accessToken": "eyJhbGc...",
+    "refreshToken": "eyJhbGc..."
+  }
+}
+
+// Use in subsequent requests
+fetch('/api/auth/me', {
+  headers: { 'Authorization': `Bearer ${accessToken}` }
+});
+```
+
+### Token Refresh
+When access token expires (after 15 minutes):
+```javascript
+// Auto-refresh with refresh token
+POST /api/auth/refresh
+
+// Returns new access token
+{
+  "success": true,
+  "accessToken": "new-token..."
+}
 ```
 
 ### User Roles
@@ -265,6 +348,53 @@ socket.on('task:created', (task) => { });
 socket.on('task:updated', (task) => { });
 socket.on('task:deleted', ({ id }) => { });
 socket.on('task:status-changed', (task) => { });
+```
+
+## 🛡️ Security Features
+
+### Comprehensive Security Implementation
+
+| Feature | Implementation | Status |
+|---------|---------------|--------|
+| Password Hashing | bcrypt with salt rounds | ✅ |
+| JWT Access Tokens | 15-minute expiry | ✅ |
+| JWT Refresh Tokens | 7-day expiry | ✅ |
+| HTTP-Only Cookies | Primary token storage | ✅ |
+| CORS Protection | Restricted origins | ✅ |
+| Rate Limiting | 100/15min general, 5/15min auth | ✅ |
+| Input Validation | Zod schemas on all routes | ✅ |
+| MongoDB Injection | express-mongo-sanitize | ✅ |
+| XSS Protection | HTTP-only cookies, CSP | ✅ |
+| CSRF Protection | SameSite cookies | ✅ |
+| Security Headers | Helmet middleware | ✅ |
+| HPP Protection | Parameter pollution prevention | ✅ |
+| HTTPS Enforcement | Production mode | ✅ |
+
+### Security Documentation
+
+For detailed security information, see:
+- **[SECURITY.md](./SECURITY.md)** - Comprehensive security documentation
+- **[SECURITY_IMPLEMENTATION.md](./SECURITY_IMPLEMENTATION.md)** - Implementation guide  
+- **[SECURITY_QUICK_REFERENCE.md](./SECURITY_QUICK_REFERENCE.md)** - Quick reference card
+- **[FRONTEND_MIGRATION_GUIDE.md](./FRONTEND_MIGRATION_GUIDE.md)** - Frontend integration guide
+- **[test-security.http](./test-security.http)** - Security testing suite (43 tests)
+
+### Quick Security Test
+
+```bash
+# Test authentication with cookies
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@taskmanager.com","password":"Admin@123456"}' \
+  -c cookies.txt
+
+# Access protected route
+curl http://localhost:5000/api/auth/me -b cookies.txt
+
+# Test rate limiting (run 6 times quickly)
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@test.com","password":"wrong"}'
 ```
 
 ## 🧑‍💻 Test Accounts
@@ -403,10 +533,23 @@ lsof -ti:5000 | xargs kill -9
 | `NODE_ENV` | Environment mode | `development` or `production` | Yes |
 | `PORT` | Server port | `5000` | Yes |
 | `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/taskmanager` | Yes |
-| `JWT_SECRET` | Secret for JWT signing | Random secure string | Yes |
-| `JWT_EXPIRE` | Token expiration | `7d`, `24h`, `60m` | Yes |
+| `JWT_SECRET` | Secret for JWT access token signing | 64-char random hex string | Yes |
+| `JWT_EXPIRE` | Access token expiration | `15m`, `1h` | Yes |
+| `JWT_REFRESH_SECRET` | Secret for refresh token signing | Different 64-char random hex | Yes |
+| `JWT_REFRESH_EXPIRE` | Refresh token expiration | `7d`, `30d` | Yes |
+| `COOKIE_EXPIRE` | Cookie expiration in days | `7` | Yes |
 | `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:3000` | Yes |
 | `SOCKET_CORS_ORIGIN` | Socket.IO CORS origin | `http://localhost:3000` | Yes |
+
+### Generating Secure Secrets
+
+```bash
+# Generate JWT_SECRET
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Generate JWT_REFRESH_SECRET (use different value!)
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
 
 ## 📄 License
 

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
+import { getErrorTranslationKey } from "@/lib/api/error-handler";
 
 import {
   Dialog,
@@ -49,6 +50,7 @@ export function TaskFormDialog({
   const tForm = useTranslations("tasks.form");
   const tFormErrors = useTranslations("tasks.form.errors");
   const tCommon = useTranslations("common");
+  const tErrors = useTranslations("errors.api");
 
   const { data: users = [] } = useAllUsers();
   const create = useCreateTask();
@@ -110,8 +112,10 @@ export function TaskFormDialog({
         toast.success(tForm("submitCreate"));
       }
       onOpenChange(false);
-    } catch {
-      toast.error(tCommon("loading"));
+    } catch (err) {
+      const errorKey = getErrorTranslationKey(err);
+      const key = errorKey.replace("errors.api.", "");
+      toast.error(tErrors(key));
     }
   };
 

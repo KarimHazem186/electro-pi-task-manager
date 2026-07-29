@@ -3,6 +3,7 @@ import Project from '../models/Project.js';
 import ProjectMember from '../models/ProjectMember.js';
 import AuditLog from '../models/AuditLog.js';
 import { asyncHandler } from '../middleware/error.js';
+import { emitTaskCreated, emitTaskUpdated, emitTaskDeleted, emitTaskStatusChanged } from '../config/socket.js';
 
 /**
  * @route   GET /api/tasks
@@ -263,6 +264,15 @@ export const createTask = asyncHandler(async (req, res) => {
     .populate('assigneeId', 'name email avatarUrl role')
     .populate('creatorId', 'name email avatarUrl role');
 
+  // Transform task
+  const taskObj = populatedTask.toJSON();
+  if (taskObj.assigneeId) {
+    taskObj.assignee = taskObj.assigneeId;
+  }
+  if (taskObj.creatorId) {
+    taskObj.creator = taskObj.creatorId;
+  }
+
   // Audit log
   await AuditLog.create({
     userId: req.user._id,
@@ -272,13 +282,8 @@ export const createTask = asyncHandler(async (req, res) => {
     metadata: { title: task.title, projectId },
   });
 
-  const taskObj = populatedTask.toJSON();
-  if (taskObj.assigneeId) {
-    taskObj.assignee = taskObj.assigneeId;
-  }
-  if (taskObj.creatorId) {
-    taskObj.creator = taskObj.creatorId;
-  }
+  // Emit socket event
+  emitTaskCreated(projectId.toString(), taskObj);
 
   res.status(201).json({
     success: true,
@@ -335,6 +340,15 @@ export const updateTask = asyncHandler(async (req, res) => {
     .populate('assigneeId', 'name email avatarUrl role')
     .populate('creatorId', 'name email avatarUrl role');
 
+  // Transform task
+  const taskObj = updatedTask.toJSON();
+  if (taskObj.assigneeId) {
+    taskObj.assignee = taskObj.assigneeId;
+  }
+  if (taskObj.creatorId) {
+    taskObj.creator = taskObj.creatorId;
+  }
+
   // Log status change
   if (changes.status && changes.status !== oldStatus) {
     await AuditLog.create({
@@ -345,6 +359,8 @@ export const updateTask = asyncHandler(async (req, res) => {
       changes: { from: oldStatus, to: changes.status },
       metadata: { title: task.title },
     });
+    // Emit status changed event
+    emitTaskStatusChanged(task.projectId.toString(), taskObj);
   } else {
     await AuditLog.create({
       userId: req.user._id,
@@ -353,14 +369,8 @@ export const updateTask = asyncHandler(async (req, res) => {
       entityId: task._id,
       changes,
     });
-  }
-
-  const taskObj = updatedTask.toJSON();
-  if (taskObj.assigneeId) {
-    taskObj.assignee = taskObj.assigneeId;
-  }
-  if (taskObj.creatorId) {
-    taskObj.creator = taskObj.creatorId;
+    // Emit updated event
+    emitTaskUpdated(task.projectId.toString(), taskObj);
   }
 
   res.json({
@@ -411,6 +421,9 @@ export const deleteTask = asyncHandler(async (req, res) => {
     entityId: task._id,
     metadata: { title: task.title, projectId: task.projectId },
   });
+
+  // Emit socket event
+  emitTaskDeleted(task.projectId.toString(), task._id.toString());
 
   res.json({
     success: true,

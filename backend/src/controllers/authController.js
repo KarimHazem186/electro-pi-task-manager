@@ -1,5 +1,9 @@
 import User from '../models/User.js';
-import { generateToken } from '../middleware/auth.js';
+import {
+  sendTokenResponse,
+  verifyRefreshToken,
+  generateAccessToken,
+} from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/error.js';
 
 /**
@@ -28,13 +32,8 @@ export const register = asyncHandler(async (req, res) => {
     role: 'member', // Default role
   });
 
-  const token = generateToken(user._id);
-
-  res.status(201).json({
-    success: true,
-    data: user.toJSON(),
-    token,
-  });
+  // Send token response with HTTP-only cookies
+  sendTokenResponse(user, 201, res);
 });
 
 /**
@@ -65,24 +64,82 @@ export const login = asyncHandler(async (req, res) => {
     });
   }
 
-  const token = generateToken(user._id);
+  // Send token response with HTTP-only cookies
+  sendTokenResponse(user, 200, res);
+});
 
-  // Remove password from output
-  user.password = undefined;
+/**
+ * @route   POST /api/auth/refresh
+ * @desc    Refresh access token using refresh token
+ * @access  Public
+ */
+export const refreshToken = asyncHandler(async (req, res) => {
+  // Get refresh token from cookie or request body
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
-  res.json({
-    success: true,
-    data: user.toJSON(),
-    token,
-  });
+  if (!refreshToken) {
+    return res.status(401).json({
+      success: false,
+      message: 'Refresh token not found',
+    });
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = verifyRefreshToken(refreshToken);
+
+    // Get user
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Generate new access token
+    const newAccessToken = generateAccessToken(user._id);
+
+    // Set new access token in cookie
+    const accessTokenOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    };
+
+    res.cookie('accessToken', newAccessToken, accessTokenOptions);
+
+    res.json({
+      success: true,
+      accessToken: newAccessToken,
+    });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired refresh token',
+    });
+  }
 });
 
 /**
  * @route   POST /api/auth/logout
- * @desc    Logout user
+ * @desc    Logout user and clear cookies
  * @access  Private
  */
 export const logout = asyncHandler(async (req, res) => {
+  // Clear cookies
+  res.cookie('accessToken', 'none', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.cookie('refreshToken', 'none', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
   res.json({
     success: true,
     message: 'Logged out successfully',

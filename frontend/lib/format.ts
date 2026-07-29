@@ -5,8 +5,11 @@ export function formatDate(value?: string | null) {
   return format(new Date(value), "MMM d, yyyy");
 }
 
-export function formatRelative(value: string) {
-  return formatDistanceToNow(new Date(value), { addSuffix: true });
+export function formatRelative(value?: string | null) {
+  if (!value) return "Unknown";
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return "Invalid date";
+  return formatDistanceToNow(date, { addSuffix: true });
 }
 
 export function dueDateTone(value?: string | null) {

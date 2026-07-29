@@ -31,7 +31,6 @@ import { Link, usePathname, useRouter } from "@/i18n/routing";
 export function AppSidebar() {
   const t = useTranslations("nav");
   const tAuth = useTranslations("auth.layout");
-  const tCommon = useTranslations("common");
   const locale = useLocale();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";

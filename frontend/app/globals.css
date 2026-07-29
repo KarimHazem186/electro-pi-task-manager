@@ -162,5 +162,15 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+}
 
+@layer utilities {
+  /* RTL utilities */
+  .rtl\:space-x-reverse > * + * {
+    --tw-space-x-reverse: 1;
+  }
+  
+  [dir="rtl"] .rtl\:space-x-reverse > * + * {
+    --tw-space-x-reverse: 1;
+  }
 }

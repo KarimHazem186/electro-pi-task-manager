@@ -8,23 +8,24 @@ import {
   deleteTask,
 } from '../controllers/taskController.js';
 import { protect } from '../middleware/auth.js';
-import { validate } from '../middleware/validate.js';
+import { zodValidate } from '../middleware/zodValidate.js';
 import {
-  createTaskValidator,
-  updateTaskValidator,
-  taskIdValidator,
-} from '../validators/taskValidator.js';
+  createTaskSchema,
+  updateTaskSchema,
+  taskIdSchema,
+  taskQuerySchema,
+} from '../validators/zodSchemas.js';
 
 const router = express.Router();
 
 router.use(protect); // All routes require authentication
 
-router.get('/', getTasks);
+router.get('/', zodValidate(taskQuerySchema), getTasks);
 router.get('/all', getAllTasks);
-router.post('/', createTaskValidator, validate, createTask);
+router.post('/', zodValidate(createTaskSchema), createTask);
 
-router.get('/:id', taskIdValidator, validate, getTaskById);
-router.patch('/:id', taskIdValidator, updateTaskValidator, validate, updateTask);
-router.delete('/:id', taskIdValidator, validate, deleteTask);
+router.get('/:id', zodValidate(taskIdSchema), getTaskById);
+router.patch('/:id', zodValidate(updateTaskSchema), updateTask);
+router.delete('/:id', zodValidate(taskIdSchema), deleteTask);
 
 export default router;

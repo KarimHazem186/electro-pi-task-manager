@@ -3,6 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import cookieParser from 'cookie-parser';
+import hpp from 'hpp';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
 import { errorHandler, notFound } from './middleware/error.js';
@@ -16,33 +19,84 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 
 const app = express();
 
+// Trust proxy (for rate limiting behind reverse proxy)
+app.set('trust proxy', 1);
+
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 
 // CORS configuration
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
+    credentials: true, // Allow cookies to be sent
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
+// Cookie parser - must come before routes
+app.use(cookieParser());
+
 // Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Data sanitization against NoSQL injection
+app.use(mongoSanitize({
+  replaceWith: '_', // Replace prohibited characters with underscore
+  onSanitize: ({ key }) => {
+    console.warn(`Sanitized prohibited character in key: ${key}`);
+  },
+}));
+
+// Prevent HTTP Parameter Pollution
+app.use(hpp({
+  whitelist: ['status', 'priority', 'tags', 'sortBy', 'sortOrder'], // Allow arrays for these params
+}));
 
 // Logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
+// Rate limiting - General API limiter
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // 100 in production, 1000 in development
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.',
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-app.use('/api', limiter);
+
+// Stricter rate limiting for auth routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 5 : 50, // 5 in production, 50 in development
+  skipSuccessfulRequests: true, // Don't count successful requests
+  message: {
+    success: false,
+    message: 'Too many authentication attempts, please try again later.',
+  },
+});
+
+// Apply rate limiters
+app.use('/api', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -53,6 +107,7 @@ app.get('/health', (req, res) => {
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
   });
 });
 

@@ -12,34 +12,75 @@ export const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15_000,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true, // Enable cookies - tokens are in HTTP-only cookies
 });
 
-// Attach JWT token from localStorage to all requests
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
+// No need for Authorization header - cookies are sent automatically
 
-// Handle API errors and extract data from success responses
+// Handle API errors, token refresh, and extract data
 api.interceptors.response.use(
   (response) => {
     // Backend returns data in { success: true, data: {...} }
-    if (response.data && response.data.success !== undefined) {
-      return { ...response, data: response.data.data || response.data };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (response.data && (response.data as any).success !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return { ...response, data: (response.data as any).data || response.data };
     }
     return response;
   },
-  (error) => {
-    // Handle authentication errors
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Don't retry on rate limit errors (429)
+    if (error.response?.status === 429) {
+      const backendMessage = error.response?.data?.message || 'Too many requests, please try again later.';
+      const enhancedError = new Error(backendMessage);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (enhancedError as any).status = 429;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (enhancedError as any).response = error.response;
+      return Promise.reject(enhancedError);
     }
+
+    // Handle token expiration - try to refresh
+    if (
+      error.response?.status === 401 &&
+      error.response?.data?.code === 'TOKEN_EXPIRED' &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        // Try to refresh the token (cookies are sent automatically)
+        await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
+          withCredentials: true,
+        });
+
+        // Retry the original request
+        return api(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed - just reject, don't redirect
+        // Let the component handle the redirect
+        return Promise.reject(refreshError);
+      }
+    }
+
+    // For 401 errors, don't auto-redirect
+    // Let the AppShell component handle it
+    // This prevents infinite loops
+
+    // Extract error message from backend response
+    const backendMessage = error.response?.data?.message || error.response?.data?.error;
+    if (backendMessage) {
+      // Create a new error with the backend message
+      const enhancedError = new Error(backendMessage);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (enhancedError as any).status = error.response?.status;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (enhancedError as any).response = error.response;
+      return Promise.reject(enhancedError);
+    }
+
     return Promise.reject(error);
   },
 );

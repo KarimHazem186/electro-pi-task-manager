@@ -22,10 +22,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Link, useRouter } from "@/i18n/routing";
 import { useApp } from "@/lib/app-context";
+import { getErrorTranslationKey } from "@/lib/api/error-handler";
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register");
   const tCommon = useTranslations("common");
+  const tErrors = useTranslations("errors.api");
   const { register, currentUser, ready } = useApp();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +76,10 @@ export default function RegisterPage() {
       toast.success(t("success"));
       router.replace("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("error"));
+      // Get translated error message
+      const errorKey = getErrorTranslationKey(err);
+      const key = errorKey.replace("errors.api.", "");
+      setError(tErrors(key));
     }
   });
 

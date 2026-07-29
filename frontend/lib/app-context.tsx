@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 import { authService } from "@/services/auth.service";
-import { mockUsers, currentUser as mockCurrentUser } from "@/data/mock";
 import type { User } from "@/types";
 
 type AuthContextValue = {
@@ -18,23 +17,28 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const STORAGE_KEY = "northwind.auth.user";
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // Hydrate from localStorage on the client only.
+  // Fetch user from backend on mount (cookies are sent automatically)
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setCurrentUser(JSON.parse(raw) as User);
-      else setCurrentUser(mockCurrentUser);
-    } catch {
-      setCurrentUser(mockCurrentUser);
-    } finally {
-      setReady(true);
+    async function fetchUser() {
+      try {
+        // Try to get current user from backend
+        // If cookies are valid, this will succeed
+        const user = await authService.me();
+        setCurrentUser(user);
+      } catch (err) {
+        // No valid session or error
+        console.log("No active session");
+        setCurrentUser(null);
+      } finally {
+        setReady(true);
+      }
     }
+
+    fetchUser();
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -43,45 +47,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currentUser,
       async login(email, password) {
         const user = await authService.login({ email, password });
-        // Mock resolver returns the demo user; fall back to a deterministic
-        // mock user matched by email so the login feels real in the UI.
-        const matched =
-          mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase()) ??
-          user;
-        setCurrentUser(matched);
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(matched));
-        } catch {}
-        return matched;
+        // Cookies are set by backend automatically
+        setCurrentUser(user);
+        return user;
       },
       async register(name, email, password) {
-        const created = await authService.register({
+        const user = await authService.register({
           name,
           email,
           password,
           confirmPassword: password,
         });
-        const user: User = { ...created, name, email };
+        // Cookies are set by backend automatically
         setCurrentUser(user);
-        try {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-        } catch {}
         return user;
       },
       async logout() {
         await authService.logout();
+        // Backend clears cookies
         setCurrentUser(null);
-        try {
-          window.localStorage.removeItem(STORAGE_KEY);
-        } catch {}
       },
       setUser: (user) => {
+        // Just update state, no localStorage
         setCurrentUser(user);
-        try {
-          if (user)
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-          else window.localStorage.removeItem(STORAGE_KEY);
-        } catch {}
       },
     }),
     [ready, currentUser],
