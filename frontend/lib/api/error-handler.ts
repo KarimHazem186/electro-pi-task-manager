@@ -72,13 +72,29 @@ export function getErrorTranslationKey(error: unknown): string {
     }
   }
 
-  // Handle Error objects
+  // Handle enhanced Error objects (created by axios interceptor with status attached)
   if (error instanceof Error) {
+    const status = (error as Error & { status?: number }).status;
     const message = error.message;
+
+    // Map by status code first (same as Axios path)
+    if (status === 401) return "errors.api.unauthorized";
+    if (status === 403) return "errors.api.forbidden";
+    if (status === 404) return "errors.api.notFound";
+    if (status === 422) return "errors.api.validationError";
+    if (status !== undefined && status >= 500) return "errors.api.serverError";
+
+    // Try to match error message
     for (const [pattern, key] of Object.entries(ERROR_MESSAGE_MAP)) {
       if (message.toLowerCase().includes(pattern.toLowerCase())) {
         return key;
       }
+    }
+
+    // Network / connection error
+    const code = (error as Error & { code?: string }).code;
+    if (code === "ERR_NETWORK" || message.includes("Network Error")) {
+      return "errors.api.networkError";
     }
   }
 

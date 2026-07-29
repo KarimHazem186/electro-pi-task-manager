@@ -51,7 +51,11 @@ jobs:
       env:
         NODE_ENV: test
         MONGODB_URI: mongodb://localhost:27017/taskmanager-test
-        JWT_SECRET: test-secret-key-for-github-actions
+        JWT_SECRET: test-secret-key-for-github-actions-access-token-signing
+        JWT_REFRESH_SECRET: test-secret-key-for-github-actions-refresh-token-signing
+        JWT_EXPIRE: 15m
+        JWT_REFRESH_EXPIRE: 7d
+        COOKIE_EXPIRE: 7
 
     - name: Upload coverage
       uses: codecov/codecov-action@v4

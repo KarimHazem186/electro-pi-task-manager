@@ -1,12 +1,12 @@
-import dotenv from 'dotenv';
+// Load environment variables
+import '../config/env.js';
+
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Project from '../models/Project.js';
 import ProjectMember from '../models/ProjectMember.js';
 import Task from '../models/Task.js';
 import AuditLog from '../models/AuditLog.js';
-
-dotenv.config();
 
 // Helper function to format date for better logging
 const formatDate = (date) => {

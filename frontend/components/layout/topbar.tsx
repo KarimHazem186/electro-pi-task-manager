@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
-import { currentUser } from "@/data/mock";
+import { useApp } from "@/lib/app-context";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +17,8 @@ import {
 export function Topbar() {
   const t = useTranslations("topbar");
   const tCommon = useTranslations("common");
+  const { currentUser } = useApp();
+  
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-card/95 px-3 backdrop-blur-none sm:px-5">
       <SidebarTrigger
@@ -53,7 +55,7 @@ export function Topbar() {
           </TooltipTrigger>
           <TooltipContent>{t("notifications")}</TooltipContent>
         </Tooltip>
-        <UserAvatar user={currentUser} className="size-8" />
+        {currentUser && <UserAvatar user={currentUser} className="size-8" />}
       </div>
     </header>
   );

@@ -12,7 +12,10 @@ describe('Project API', () => {
   let memberUser;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/taskmanager-test');
+    // Connect to test database (MongoDB Memory Server URI is set in globalSetup)
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(process.env.MONGODB_URI);
+    }
   });
 
   afterAll(async () => {
@@ -47,13 +50,13 @@ describe('Project API', () => {
     const adminLogin = await request(app)
       .post('/api/auth/login')
       .send({ email: 'admin@test.com', password: 'Admin@123456' });
-    adminToken = adminLogin.body.token;
+    adminToken = adminLogin.body.tokens?.accessToken;
 
     // Login member
     const memberLogin = await request(app)
       .post('/api/auth/login')
       .send({ email: 'member@test.com', password: 'Member@123456' });
-    memberToken = memberLogin.body.token;
+    memberToken = memberLogin.body.tokens?.accessToken;
   });
 
   describe('POST /api/projects', () => {

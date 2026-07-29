@@ -11,9 +11,18 @@ import { DataPagination } from "@/components/shared/data-pagination";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { EmptyState } from "@/components/shared/empty-state";
+import { InviteMemberDialog } from "@/components/shared/invite-member-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -22,18 +31,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useRemoveMember, useUsers } from "@/hooks/use-users";
+import { useInviteMember, useRemoveMember, useUsers } from "@/hooks/use-users";
+import { getRoleBadgeVariant } from "@/lib/role-utils";
+import { useApp } from "@/lib/app-context";
+import { MoreVertical, Trash2, Mail } from "lucide-react";
 import type { User } from "@/types";
 
 export default function MembersPage() {
   const t = useTranslations("members");
   const tCommon = useTranslations("common");
 
+  const { currentUser } = useApp();
+  const canInvite = currentUser?.role === "admin" || currentUser?.role === "manager";
+  const canRemove = currentUser?.role === "admin";
+
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [removing, setRemoving] = useState<User | null>(null);
+  const [inviting, setInviting] = useState(false);
   const query = useUsers({ page, pageSize: 8, search });
   const remove = useRemoveMember();
+  const invite = useInviteMember();
+
+  const handleInvite = async (data: { email: string; role: User["role"] }) => {
+    try {
+      await invite.mutateAsync(data);
+      toast.success(t("inviteDialog.success", { email: data.email }));
+      setInviting(false);
+      query.refetch();
+    } catch (error) {
+      toast.error(t("inviteDialog.error"));
+    }
+  };
+
+  const stats = {
+    total: query.data?.total ?? 0,
+    admins: query.data?.data.filter((u) => u.role === "admin").length ?? 0,
+    managers: query.data?.data.filter((u) => u.role === "manager").length ?? 0,
+    members: query.data?.data.filter((u) => u.role === "member").length ?? 0,
+  };
 
   return (
     <>
@@ -41,13 +77,49 @@ export default function MembersPage() {
         title={t("title")}
         description={t("subtitle")}
         actions={
-          <Button
-            onClick={() => toast.info(t("inviteHint"))}
-          >
-            <UserPlus className="size-4" /> {t("invite")}
-          </Button>
+          canInvite ? (
+            <Button onClick={() => setInviting(true)}>
+              <UserPlus className="size-4" /> {t("invite")}
+            </Button>
+          ) : undefined
         }
       />
+
+      {/* Statistics Cards */}
+      {!query.isLoading && query.data && (
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border bg-card p-4 shadow-soft">
+            <div className="text-sm font-medium text-muted-foreground">
+              {t("stats.total")}
+            </div>
+            <div className="mt-1 text-2xl font-bold">{stats.total}</div>
+          </div>
+          <div className="rounded-lg border bg-card p-4 shadow-soft">
+            <div className="text-sm font-medium text-muted-foreground">
+              {t("roles.admin")}s
+            </div>
+            <div className="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">
+              {stats.admins}
+            </div>
+          </div>
+          <div className="rounded-lg border bg-card p-4 shadow-soft">
+            <div className="text-sm font-medium text-muted-foreground">
+              {t("roles.manager")}s
+            </div>
+            <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">
+              {stats.managers}
+            </div>
+          </div>
+          <div className="rounded-lg border bg-card p-4 shadow-soft">
+            <div className="text-sm font-medium text-muted-foreground">
+              {t("roles.member")}s
+            </div>
+            <div className="mt-1 text-2xl font-bold text-gray-600 dark:text-gray-400">
+              {stats.members}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mb-5">
         <SearchInput
@@ -93,19 +165,44 @@ export default function MembersPage() {
                       {user.email}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="capitalize">
+                      <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
                         {t(`roles.${user.role}` as never)}
                       </Badge>
                     </TableCell>
                     <TableCell>{user.projectsCount ?? 0}</TableCell>
                     <TableCell className="text-end">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setRemoving(user)}
-                      >
-                        {t("remove")}
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">{tCommon("actionsFor", { name: user.name })}</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>{tCommon("actions")}</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              navigator.clipboard.writeText(user.email);
+                              toast.success(t("emailCopied"));
+                            }}
+                          >
+                            <Mail className="mr-2 h-4 w-4" />
+                            {t("copyEmail")}
+                          </DropdownMenuItem>
+                          {canRemove && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => setRemoving(user)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t("remove")}
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -130,17 +227,20 @@ export default function MembersPage() {
                       </p>
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setRemoving(user)}
-                    className="shrink-0"
-                  >
-                    {t("remove")}
-                  </Button>
+                  {canRemove && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setRemoving(user)}
+                      className="shrink-0 text-destructive"
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      {t("remove")}
+                    </Button>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="capitalize">
+                  <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
                     {t(`roles.${user.role}` as never)}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
@@ -176,10 +276,17 @@ export default function MembersPage() {
         onConfirm={async () => {
           if (!removing) return;
           await remove.mutateAsync(removing.id);
-          toast.success(t("removeDialog.title"));
+          toast.success(t("removeDialog.success"));
           setRemoving(null);
           query.refetch();
         }}
+      />
+
+      <InviteMemberDialog
+        open={inviting}
+        onOpenChange={setInviting}
+        onInvite={handleInvite}
+        loading={invite.isPending}
       />
     </>
   );

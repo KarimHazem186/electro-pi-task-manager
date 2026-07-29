@@ -2,22 +2,30 @@ import { z } from 'zod';
 
 // Auth Schemas
 export const registerSchema = z.object({
-  body: z.object({
-    name: z
-      .string({ required_error: 'Name is required' })
-      .min(2, 'Name must be at least 2 characters')
-      .max(100, 'Name cannot exceed 100 characters')
-      .trim(),
-    email: z
-      .string({ required_error: 'Email is required' })
-      .email('Please provide a valid email')
-      .toLowerCase()
-      .trim(),
-    password: z
-      .string({ required_error: 'Password is required' })
-      .min(6, 'Password must be at least 6 characters')
-      .max(100, 'Password cannot exceed 100 characters'),
-  }),
+  body: z
+    .object({
+      name: z
+        .string({ required_error: 'Name is required' })
+        .min(2, 'Name must be at least 2 characters')
+        .max(100, 'Name cannot exceed 100 characters')
+        .trim(),
+      email: z
+        .string({ required_error: 'Email is required' })
+        .email('Please provide a valid email')
+        .toLowerCase()
+        .trim(),
+      password: z
+        .string({ required_error: 'Password is required' })
+        .min(6, 'Password must be at least 6 characters')
+        .max(100, 'Password cannot exceed 100 characters'),
+      confirmPassword: z
+        .string({ required_error: 'Confirm password is required' })
+        .min(6, 'Confirm password must be at least 6 characters'),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: 'Passwords do not match',
+      path: ['confirmPassword'],
+    }),
 });
 
 export const loginSchema = z.object({
@@ -103,11 +111,11 @@ export const projectIdSchema = z.object({
 
 export const addProjectMemberSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID'),
+    projectId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID'),
   }),
   body: z.object({
     userId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID'),
-    role: z.enum(['owner', 'manager', 'member'], {
+    role: z.enum(['owner', 'editor', 'viewer'], {
       required_error: 'Role is required',
     }),
   }),
@@ -119,7 +127,7 @@ export const updateProjectMemberSchema = z.object({
     memberId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid member ID'),
   }),
   body: z.object({
-    role: z.enum(['owner', 'manager', 'member'], {
+    role: z.enum(['owner', 'editor', 'viewer'], {
       required_error: 'Role is required',
     }),
   }),
@@ -206,13 +214,18 @@ export const taskIdSchema = z.object({
 export const taskQuerySchema = z.object({
   query: z.object({
     projectId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID').optional(),
-    status: z.enum(['todo', 'in_progress', 'done']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
-    assigneeId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid assignee ID').optional(),
+    status: z.enum(['todo', 'in_progress', 'done', 'all']).optional(),
+    priority: z.enum(['low', 'medium', 'high', 'all']).optional(),
+    assigneeId: z.union([
+      z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid assignee ID'),
+      z.literal('all')
+    ]).optional(),
     search: z.string().trim().optional(),
     sortBy: z.enum(['createdAt', 'dueDate', 'priority', 'title']).optional(),
     sortOrder: z.enum(['asc', 'desc']).optional(),
+    sortDir: z.enum(['asc', 'desc']).optional(),
     page: z.string().regex(/^\d+$/).transform(Number).optional(),
+    pageSize: z.string().regex(/^\d+$/).transform(Number).optional(),
     limit: z.string().regex(/^\d+$/).transform(Number).optional(),
   }),
 });
@@ -221,5 +234,18 @@ export const taskQuerySchema = z.object({
 export const userIdSchema = z.object({
   params: z.object({
     id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID'),
+  }),
+});
+
+export const inviteUserSchema = z.object({
+  body: z.object({
+    email: z
+      .string({ required_error: 'Email is required' })
+      .email('Please provide a valid email')
+      .toLowerCase()
+      .trim(),
+    role: z.enum(['admin', 'manager', 'member'], {
+      required_error: 'Role is required',
+    }),
   }),
 });

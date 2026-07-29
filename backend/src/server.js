@@ -1,14 +1,17 @@
-import dotenv from 'dotenv';
+// Load environment variables FIRST
+import './config/env.js';
+
 import { createServer } from 'http';
 import app from './app.js';
 import { connectDB } from './config/database.js';
 import { initializeSocket } from './config/socket.js';
-
-// Load environment variables
-dotenv.config();
+import { verifyCloudinaryConfig } from './config/cloudinary.js';
 
 // Connect to database
 connectDB();
+
+// Verify Cloudinary configuration
+verifyCloudinaryConfig();
 
 // Create HTTP server
 const server = createServer(app);

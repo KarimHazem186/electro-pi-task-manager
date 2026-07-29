@@ -1,5 +1,5 @@
-import { api, resolve } from "@/lib/api/client";
-import { currentUser } from "@/data/mock";
+import { api } from "@/lib/api/client";
+import { startTokenRefresh, stopTokenRefresh } from "@/lib/api/token-refresh";
 import type {
   ChangePasswordPayload,
   LoginPayload,
@@ -10,54 +10,45 @@ import type {
 
 /** Auth endpoints. Tokens are stored in HTTP-only cookies by the backend. */
 export const authService = {
-  login: (payload: LoginPayload) =>
-    resolve<User>(
-      () => currentUser,
-      async () => {
-        const response = await api.post<{ data: User }>("/auth/login", payload);
-        // Tokens are automatically stored in HTTP-only cookies by backend
-        // No need to handle tokens in frontend
-        return response.data.data;
-      },
-    ),
+  login: async (payload: LoginPayload): Promise<User> => {
+    const response = await api.post<User>("/auth/login", payload);
+    // Tokens are automatically stored in HTTP-only cookies by backend
+    
+    // Start automatic token refresh in background
+    startTokenRefresh();
+    
+    return response.data;
+  },
 
-  register: (payload: RegisterPayload) =>
-    resolve<User>(
-      () => ({ ...currentUser, name: payload.name, email: payload.email }),
-      async () => {
-        const response = await api.post<{ data: User }>("/auth/register", payload);
-        // Tokens are automatically stored in HTTP-only cookies by backend
-        return response.data.data;
-      },
-    ),
+  register: async (payload: RegisterPayload): Promise<User> => {
+    const response = await api.post<User>("/auth/register", payload);
+    // Tokens are automatically stored in HTTP-only cookies by backend
+    
+    // Start automatic token refresh in background
+    startTokenRefresh();
+    
+    return response.data;
+  },
 
-  logout: () =>
-    resolve<void>(
-      () => undefined,
-      async () => {
-        // Backend clears the HTTP-only cookies
-        await api.post("/auth/logout");
-        // No localStorage to clean
-      },
-    ),
+  logout: async (): Promise<void> => {
+    // Stop automatic token refresh
+    stopTokenRefresh();
+    
+    // Backend clears the HTTP-only cookies
+    await api.post("/auth/logout");
+  },
 
-  me: () =>
-    resolve<User>(
-      () => currentUser,
-      async () => (await api.get<User>("/auth/me")).data,
-    ),
+  me: async (): Promise<User> => {
+    const response = await api.get<User>("/auth/me");
+    return response.data;
+  },
 
-  updateProfile: (payload: UpdateProfilePayload) =>
-    resolve<User>(
-      () => ({ ...currentUser, ...payload }),
-      async () => (await api.patch<User>("/auth/profile", payload)).data,
-    ),
+  updateProfile: async (payload: UpdateProfilePayload): Promise<User> => {
+    const response = await api.patch<User>("/auth/profile", payload);
+    return response.data;
+  },
 
-  changePassword: (payload: ChangePasswordPayload) =>
-    resolve<void>(
-      () => undefined,
-      async () => {
-        await api.post("/auth/change-password", payload);
-      },
-    ),
+  changePassword: async (payload: ChangePasswordPayload): Promise<void> => {
+    await api.post("/auth/change-password", payload);
+  },
 };

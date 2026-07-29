@@ -227,9 +227,64 @@ export const mockTasks: Task[] = [
 ];
 
 export const mockActivity: ActivityEvent[] = [
-  { id: "a1", actor: mockUsers[2], action: "completed", target: "Document color tokens", createdAt: iso(-1) },
-  { id: "a2", actor: mockUsers[3], action: "commented on", target: "Map legacy invoice schema", createdAt: iso(-1) },
-  { id: "a3", actor: mockUsers[5], action: "created", target: "Security Hardening", createdAt: iso(-2) },
-  { id: "a4", actor: mockUsers[4], action: "assigned you to", target: "Offline sync spike", createdAt: iso(-2) },
-  { id: "a5", actor: mockUsers[1], action: "moved", target: "Dry-run migration script", createdAt: iso(-3) },
+  { 
+    id: "a1", 
+    type: "task", 
+    message: "completed Document color tokens",
+    actor: mockUsers[2], 
+    user: mockUsers[2],
+    action: "completed", 
+    target: "Document color tokens", 
+    href: null,
+    timestamp: iso(-1),
+    createdAt: iso(-1) 
+  },
+  { 
+    id: "a2", 
+    type: "task", 
+    message: "commented on Map legacy invoice schema",
+    actor: mockUsers[3], 
+    user: mockUsers[3],
+    action: "commented on", 
+    target: "Map legacy invoice schema", 
+    href: null,
+    timestamp: iso(-1),
+    createdAt: iso(-1) 
+  },
+  { 
+    id: "a3", 
+    type: "project", 
+    message: "created Security Hardening",
+    actor: mockUsers[5], 
+    user: mockUsers[5],
+    action: "created", 
+    target: "Security Hardening", 
+    href: null,
+    timestamp: iso(-2),
+    createdAt: iso(-2) 
+  },
+  { 
+    id: "a4", 
+    type: "task", 
+    message: "assigned you to Offline sync spike",
+    actor: mockUsers[4], 
+    user: mockUsers[4],
+    action: "assigned you to", 
+    target: "Offline sync spike", 
+    href: null,
+    timestamp: iso(-2),
+    createdAt: iso(-2) 
+  },
+  { 
+    id: "a5", 
+    type: "task", 
+    message: "moved Dry-run migration script",
+    actor: mockUsers[1], 
+    user: mockUsers[1],
+    action: "moved", 
+    target: "Dry-run migration script", 
+    href: null,
+    timestamp: iso(-3),
+    createdAt: iso(-3) 
+  },
 ];

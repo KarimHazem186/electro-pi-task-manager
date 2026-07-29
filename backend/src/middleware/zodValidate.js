@@ -16,9 +16,9 @@ export const zodValidate = (schema) => {
       
       next();
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof z.ZodError || (error?.name === 'ZodError' && error?.errors)) {
         // Format Zod errors into a readable format
-        const errors = error.errors.map((err) => ({
+        const errors = (error.errors || []).map((err) => ({
           field: err.path.join('.'),
           message: err.message,
         }));
@@ -31,10 +31,7 @@ export const zodValidate = (schema) => {
       }
 
       // Handle other errors
-      return res.status(500).json({
-        success: false,
-        message: 'Validation error',
-      });
+      next(error);
     }
   };
 };

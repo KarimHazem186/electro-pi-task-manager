@@ -21,7 +21,7 @@ import { PriorityBadge, StatusBadge } from "@/components/shared/badges";
 import { useActivityFeed, useDashboardStats } from "@/hooks/use-users";
 import { useProjects } from "@/hooks/use-projects";
 import { useAllTasks } from "@/hooks/use-tasks";
-import { currentUser } from "@/data/mock";
+import { useApp } from "@/lib/app-context";
 import { dueDateTone, formatDate, formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
@@ -29,10 +29,14 @@ import { Link } from "@/i18n/routing";
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const tEmpty = useTranslations("empty");
+  const { currentUser } = useApp();
 
   const stats = useDashboardStats();
   const projects = useProjects({ page: 1, pageSize: 3 });
-  const tasks = useAllTasks({ assigneeId: currentUser.id });
+  const tasks = useAllTasks(
+    { assigneeId: currentUser?.id },
+    { enabled: !!currentUser },
+  );
   const activity = useActivityFeed();
 
   const assigned = tasks.data ?? [];
@@ -44,7 +48,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title={t("welcome", { name: currentUser.name.split(" ")[0] })}
+        title={t("welcome", { name: (currentUser?.name ?? "").split(" ")[0] })}
         description={t("subtitle")}
         actions={
           <Button asChild>
@@ -52,8 +56,7 @@ export default function DashboardPage() {
               <Plus className="size-4" /> {t("newProject")}
             </Link>
           </Button>
-        }
-      />
+        }      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
@@ -82,8 +85,8 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <Card className="rounded-xl border-border shadow-soft lg:col-span-2">
+      <div className="mt-6 grid gap-4 lg:grid-cols-3 lg:auto-rows-min">
+        <Card className="rounded-xl border-border shadow-soft lg:col-span-2 self-start">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-base">{t("recentProjects")}</CardTitle>
             <Button asChild variant="ghost" size="sm">
@@ -126,7 +129,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border-border shadow-soft">
+        <Card className="rounded-xl border-border shadow-soft self-start">
           <CardHeader>
             <CardTitle className="text-base">{t("upcomingDeadlines")}</CardTitle>
           </CardHeader>
@@ -152,13 +155,18 @@ export default function DashboardPage() {
                   </span>
                 </div>
               ))
+            ) : tasks.error ? (
+              <EmptyState 
+                title={t("nothingDue")} 
+                description={`Error: ${tasks.error instanceof Error ? tasks.error.message : 'Unknown error'}`}
+              />
             ) : (
               <EmptyState title={t("nothingDue")} description={t("allCaughtUp")} />
             )}
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border-border shadow-soft lg:col-span-2">
+        <Card className="rounded-xl border-border shadow-soft lg:col-span-2 self-start">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle className="text-base">{t("myAssignedTasks")}</CardTitle>
             <Button asChild variant="ghost" size="sm">
@@ -194,7 +202,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border-border shadow-soft">
+        <Card className="rounded-xl border-border shadow-soft self-start">
           <CardHeader>
             <CardTitle className="text-base">{t("activity")}</CardTitle>
           </CardHeader>
@@ -204,24 +212,45 @@ export default function DashboardPage() {
                 <Skeleton key={i} className="h-10 rounded-xl" />
               ))
             ) : activity.data?.length ? (
-              activity.data.map((event) => (
-                <div key={event.id} className="flex min-w-0 gap-3">
-                  <UserAvatar
-                    user={event.actor}
-                    className="size-7 shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm leading-snug">
-                      <span className="font-medium">{event.actor?.name}</span>{" "}
-                      {event.action}{" "}
-                      <span className="font-medium">{event.target}</span>
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatRelative(event.createdAt)}
-                    </p>
+              activity.data.map((event) => {
+                const user = event.actor ?? event.user;
+                if (!user) return null;
+                
+                const inner = (
+                  <>
+                    <UserAvatar
+                      user={user}
+                      className="size-7 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm leading-snug">
+                        <span className="font-medium">{user.name}</span>{" "}
+                        {event.action}{" "}
+                        <span className="font-medium">{event.target}</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatRelative(event.createdAt ?? event.timestamp)}
+                      </p>
+                    </div>
+                  </>
+                );
+                
+                const baseClasses = "flex min-w-0 items-start gap-3 rounded-lg p-2.5";
+                
+                return event.href ? (
+                  <Link
+                    key={event.id}
+                    href={event.href}
+                    className={cn(baseClasses, "-mx-2 transition-colors hover:bg-secondary/60")}
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  <div key={event.id} className={baseClasses}>
+                    {inner}
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <EmptyState title={t("noActivity")} />
             )}

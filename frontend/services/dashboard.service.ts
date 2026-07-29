@@ -1,22 +1,14 @@
-import { api, resolve } from "@/lib/api/client";
-import { mockActivity, mockProjects, mockTasks } from "@/data/mock";
+import { api } from "@/lib/api/client";
 import type { ActivityEvent, DashboardStats } from "@/types";
 
 export const dashboardService = {
-  stats: () =>
-    resolve<DashboardStats>(
-      () => ({
-        totalProjects: mockProjects.length,
-        totalTasks: mockTasks.length,
-        completedTasks: mockTasks.filter((t) => t.status === "done").length,
-        pendingTasks: mockTasks.filter((t) => t.status !== "done").length,
-      }),
-      async () => (await api.get<DashboardStats>("/dashboard/stats")).data,
-    ),
+  stats: async (): Promise<DashboardStats> => {
+    const response = await api.get<DashboardStats>("/dashboard/stats");
+    return response.data;
+  },
 
-  activity: () =>
-    resolve<ActivityEvent[]>(
-      () => mockActivity,
-      async () => (await api.get<ActivityEvent[]>("/dashboard/activity")).data,
-    ),
+  activity: async (): Promise<ActivityEvent[]> => {
+    const response = await api.get<ActivityEvent[]>("/dashboard/activity");
+    return response.data;
+  },
 };

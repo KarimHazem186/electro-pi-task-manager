@@ -48,36 +48,21 @@ docker-compose.override.yml
 *.pem
 .vercel
 
+# Favicon and icons (customize locally, don't upload)
+favicon.ico
+apple-touch-icon.png
+icon*.png
+android-chrome*.png
+
 # Extra documentation (keep locally only - not for GitHub)
-ASSESSMENT_CHECKLIST.md
-SUBMISSION.md
-FEATURES.md
-TESTING_GUIDE.md
-RTL_SIDEBAR_FIX.md
-COMPLETION_SUMMARY.md
-COMPREHENSIVE_SEED_COMPLETE.md
-TEST_API_CONNECTION.md
-FRONTEND_BACKEND_INTEGRATION_FIXED.md
-README_START_HERE.md
-REAL_DATA_COMPLETE.md
-TRANSLATION_AND_NOTIFICATION_GUIDE.md
-TRANSLATION_AND_NOTIFICATIONS.md
-QUICK_START_AMARA.md
-SEED_SUMMARY.md
-GIT_COMMIT_GUIDE.md
-DEPLOYMENT.md
-DEPLOYMENT_FILES_SUMMARY.md
-DEPLOYMENT_NOTES.md
-DEPLOYMENT_NOTES_AR.md
-FIX_CORS_NOW.md
-QUICK_DEPLOY.md
-VERCEL_READY.md
-البدء_السريع_AMARA.md
-اعمل_كده_دلوقتي.md
-جاهز_للنشر.md
+*.md
+!README.md
+!CONTRIBUTING.md
 
 # Backend documentation files (development only)
+backend/CLOUDINARY_SETUP_GUIDE.md
 backend/FRONTEND_MIGRATION_GUIDE.md
+backend/IMAGE_UPLOAD_SUMMARY.md
 backend/IMPLEMENTATION_COMPLETE.md
 backend/SECURITY.md
 backend/SECURITY_CHECKLIST.md
@@ -91,6 +76,9 @@ backend/NORTHWIND_SEED_DATA.md
 backend/README_ARABIC.md
 backend/SOCKET_IO_EXPLANATION.md
 backend/VERCEL_DEPLOYMENT.md
+backend/UPLOAD_*.md
+backend/WEBSOCKET_IMPLEMENTATION.md
+backend/TOKEN_REFRESH_GUIDE.md
 
 # Frontend documentation files (development only)
 frontend/TRANSLATION_EXAMPLES.md

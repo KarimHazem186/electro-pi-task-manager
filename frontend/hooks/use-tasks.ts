@@ -13,7 +13,15 @@ export function useTasks(query: TaskListQuery) {
 export function useAllTasks(query: TaskListQuery, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["tasks", "board", query],
-    queryFn: () => taskService.listAll(query),
+    queryFn: async () => {
+      try {
+        const data = await taskService.listAll(query);
+        return data ?? [];
+      } catch (error) {
+        console.error("Failed to fetch tasks:", error);
+        return [];
+      }
+    },
     enabled: options?.enabled ?? true,
   });
 }

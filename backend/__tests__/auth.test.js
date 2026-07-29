@@ -5,16 +5,20 @@ import User from '../src/models/User.js';
 
 describe('Authentication API', () => {
   beforeAll(async () => {
-    // Connect to test database
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/taskmanager-test');
+    // Connect to test database (MongoDB Memory Server URI is set in globalSetup)
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(process.env.MONGODB_URI);
+    }
   });
 
   afterAll(async () => {
+    // Clean up and disconnect
     await User.deleteMany({});
     await mongoose.connection.close();
   });
 
   beforeEach(async () => {
+    // Clear users before each test
     await User.deleteMany({});
   });
 
@@ -33,7 +37,8 @@ describe('Authentication API', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('id');
       expect(res.body.data.email).toBe('test@example.com');
-      expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('tokens');
+      expect(res.body.tokens).toHaveProperty('accessToken');
     });
 
     it('should fail with invalid email', async () => {
@@ -105,7 +110,8 @@ describe('Authentication API', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('id');
-      expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('tokens');
+      expect(res.body.tokens).toHaveProperty('accessToken');
     });
 
     it('should fail with incorrect password', async () => {
@@ -153,7 +159,7 @@ describe('Authentication API', () => {
           password: 'Test@123456',
         });
 
-      token = res.body.token;
+      token = res.body.tokens?.accessToken;
     });
 
     it('should get current user with valid token', async () => {

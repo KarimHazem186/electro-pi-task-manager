@@ -1,13 +1,16 @@
+import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types";
 
-export function initials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
+export function initials(name: string | undefined | null) {
+  if (!name?.trim()) return "?";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0]!.substring(0, 2).toUpperCase();
+  return parts
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
+    .map((part) => part[0]?.toUpperCase() || "")
     .join("");
 }
 
@@ -17,13 +20,19 @@ interface UserAvatarProps {
 }
 
 export function UserAvatar({ user, className }: UserAvatarProps) {
+  const [imageError, setImageError] = React.useState(false);
+  
   return (
     <Avatar className={cn("size-8 border border-border", className)}>
-      {user?.avatarUrl ? (
-        <AvatarImage src={user.avatarUrl} alt={user.name} />
+      {user?.avatarUrl && !imageError ? (
+        <AvatarImage 
+          src={user.avatarUrl} 
+          alt={user.name || "User avatar"}
+          onError={() => setImageError(true)}
+        />
       ) : null}
       <AvatarFallback className="bg-accent text-[11px] font-semibold text-accent-foreground">
-        {user ? initials(user.name) : "?"}
+        {initials(user?.name)}
       </AvatarFallback>
     </Avatar>
   );

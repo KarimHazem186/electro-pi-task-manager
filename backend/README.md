@@ -65,6 +65,14 @@ FRONTEND_URL=http://localhost:3000
 SOCKET_CORS_ORIGIN=http://localhost:3000
 ```
 
+> **💡 Pro Tip for Local Development:** 
+> Create a `.env.local` file (git-ignored) for your real credentials:
+> ```bash
+> cp .env .env.local
+> # Edit .env.local with your actual MongoDB URI, API keys, etc.
+> ```
+> The app will automatically use `.env.local` if it exists, keeping your real credentials safe!
+
 > **🔒 Security Note**: Use strong random secrets in production. Generate with:
 > ```bash
 > node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"

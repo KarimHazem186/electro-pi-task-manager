@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AvatarGroup } from "@/components/shared/user-avatar";
+import { useApp } from "@/lib/app-context";
+import { canManageProject } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
 import { Link } from "@/i18n/routing";
 import type { Project } from "@/types";
@@ -28,6 +30,9 @@ export function ProjectCard({
 }) {
   const t = useTranslations("projects");
   const tCommon = useTranslations("common");
+
+  const { currentUser } = useApp();
+  const allowed = canManageProject(currentUser, project);
 
   const progress = project.taskCount
     ? Math.round((project.completedTaskCount / project.taskCount) * 100)
@@ -47,29 +52,31 @@ export function ProjectCard({
             {project.description}
           </p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0"
-              aria-label={tCommon("actionsFor", { name: project.name })}
-            >
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onSelect={() => onEdit(project)}>
-              <Pencil className="size-4" /> {tCommon("edit")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onSelect={() => onDelete(project)}
-            >
-              <Trash2 className="size-4" /> {tCommon("delete")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {allowed && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0"
+                aria-label={tCommon("actionsFor", { name: project.name })}
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onSelect={() => onEdit(project)}>
+                <Pencil className="size-4" /> {tCommon("edit")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={() => onDelete(project)}
+              >
+                <Trash2 className="size-4" /> {tCommon("delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-2 pb-4">

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { AvatarUpload } from "@/components/shared/avatar-upload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,11 +22,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { currentUser } from "@/data/mock";
+import { useProfilePictureUpload } from "@/hooks/use-upload";
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
   const tErrors = useTranslations("profile.errors");
+  const tUpload = useTranslations("upload.avatar");
+
+  const { upload, deleteAvatar, isUploading, isDeleting } = useProfilePictureUpload();
 
   const profileSchema = useMemo(
     () =>
@@ -71,7 +75,15 @@ export default function ProfilePage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="rounded-xl border-border shadow-soft">
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-            <UserAvatar user={currentUser} className="size-16 text-base" />
+            <AvatarUpload
+              value={currentUser.avatarUrl || undefined}
+              name={currentUser.name}
+              onFileSelect={upload}
+              onDelete={deleteAvatar}
+              isUploading={isUploading}
+              isDeleting={isDeleting}
+              size="xl"
+            />
             <div>
               <p className="font-semibold">{currentUser.name}</p>
               <p className="text-sm text-muted-foreground">{currentUser.email}</p>
@@ -79,6 +91,7 @@ export default function ProfilePage() {
             <Badge variant="outline" className="capitalize">
               {currentUser.role}
             </Badge>
+            <p className="text-xs text-muted-foreground">{tUpload("title")}</p>
           </CardContent>
         </Card>
 

@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 import { authService } from "@/services/auth.service";
+import { startTokenRefresh, stopTokenRefresh } from "@/lib/api/token-refresh";
 import type { User } from "@/types";
 
 type AuthContextValue = {
@@ -29,16 +30,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // If cookies are valid, this will succeed
         const user = await authService.me();
         setCurrentUser(user);
+        
+        // User is logged in, start automatic token refresh
+        startTokenRefresh();
       } catch (err) {
         // No valid session or error
         console.log("No active session");
         setCurrentUser(null);
+        
+        // No user, stop any token refresh
+        stopTokenRefresh();
       } finally {
         setReady(true);
       }
     }
 
     fetchUser();
+    
+    // Cleanup on unmount
+    return () => {
+      stopTokenRefresh();
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -63,8 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return user;
       },
       async logout() {
-        await authService.logout();
-        // Backend clears cookies
+        try {
+          await authService.logout();
+        } catch (error) {
+          // Ignore logout errors - user might already be logged out
+          console.log("Logout error (ignored):", error);
+        }
+        // Always clear local state regardless of API call success
         setCurrentUser(null);
       },
       setUser: (user) => {

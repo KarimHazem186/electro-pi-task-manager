@@ -13,6 +13,7 @@ export interface User {
   name: string;
   email: string;
   avatarUrl?: string | null;
+  avatarPublicId?: string | null;
   role: UserRole;
   projectsCount?: number;
   createdAt: ISODateString;
@@ -28,6 +29,8 @@ export interface Project {
   description: string;
   status: ProjectStatus;
   ownerId: UUID;
+  coverImage?: string | null;
+  coverImagePublicId?: string | null;
   members: ProjectMember[];
   taskCount: number;
   completedTaskCount: number;
@@ -49,6 +52,14 @@ export interface ProjectMember {
 export type TaskStatus = "todo" | "in_progress" | "done";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
 
+export interface TaskAttachment {
+  _id: string;
+  url: string;
+  publicId: string;
+  uploadedBy: UUID;
+  uploadedAt: ISODateString;
+}
+
 export interface Task {
   id: UUID;
   projectId: UUID;
@@ -61,16 +72,24 @@ export interface Task {
   assignee?: User | null;
   creatorId: UUID;
   creator?: User | null;
+  attachments?: TaskAttachment[];
   createdAt: ISODateString;
   updatedAt?: ISODateString;
 }
 
 export interface ActivityEvent {
   id: UUID;
-  actor: User;
+  type: string;
+  message: string;
+  actor: User | null;
   action: string;
   target: string;
+  href: string | null;
+  entityType?: string;
+  user: User | null;
+  timestamp: ISODateString;
   createdAt: ISODateString;
+  metadata?: Record<string, unknown>;
 }
 
 /* ---------- API envelopes ---------- */

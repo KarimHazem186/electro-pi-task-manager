@@ -3,6 +3,7 @@ import ProjectMember from '../models/ProjectMember.js';
 import Task from '../models/Task.js';
 import AuditLog from '../models/AuditLog.js';
 import { asyncHandler } from '../middleware/error.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../utils/uploadHelper.js';
 
 /**
  * @route   GET /api/projects
@@ -305,6 +306,7 @@ export const updateProject = asyncHandler(async (req, res) => {
     entityType: 'project',
     entityId: project._id,
     changes,
+    metadata: { name: updatedProject.name },
   });
 
   const taskCount = await Task.countDocuments({ projectId: updatedProject._id });
@@ -495,5 +497,127 @@ export const removeProjectMember = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: 'Member removed successfully',
+  });
+});
+
+/**
+ * @route   PUT /api/projects/:id/cover
+ * @desc    Update project cover image
+ * @access  Private (Owner or Admin)
+ */
+export const updateProjectCover = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please upload an image file',
+    });
+  }
+
+  const project = await Project.findById(req.params.id);
+  if (!project) {
+    return res.status(404).json({
+      success: false,
+      message: 'Project not found',
+    });
+  }
+
+  // Check ownership
+  if (
+    req.user.role !== 'admin' &&
+    project.ownerId.toString() !== req.user._id.toString()
+  ) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only project owner or admin can update cover image',
+    });
+  }
+
+  // Delete old cover if exists
+  if (project.coverImagePublicId) {
+    try {
+      await deleteFromCloudinary(project.coverImagePublicId);
+    } catch (error) {
+      console.error('Failed to delete old cover:', error);
+    }
+  }
+
+  // Upload new cover
+  const result = await uploadToCloudinary(req.file.buffer, 'task-manager/projects');
+
+  // Update project
+  project.coverImage = result.secure_url;
+  project.coverImagePublicId = result.public_id;
+  await project.save();
+
+  // Audit log
+  await AuditLog.create({
+    userId: req.user._id,
+    action: 'updated',
+    entityType: 'project',
+    entityId: project._id,
+    metadata: { name: project.name, action: 'cover_updated' },
+  });
+
+  res.json({
+    success: true,
+    message: 'Cover image updated successfully',
+    data: {
+      coverImage: project.coverImage,
+    },
+  });
+});
+
+/**
+ * @route   DELETE /api/projects/:id/cover
+ * @desc    Delete project cover image
+ * @access  Private (Owner or Admin)
+ */
+export const deleteProjectCover = asyncHandler(async (req, res) => {
+  const project = await Project.findById(req.params.id);
+  if (!project) {
+    return res.status(404).json({
+      success: false,
+      message: 'Project not found',
+    });
+  }
+
+  // Check ownership
+  if (
+    req.user.role !== 'admin' &&
+    project.ownerId.toString() !== req.user._id.toString()
+  ) {
+    return res.status(403).json({
+      success: false,
+      message: 'Only project owner or admin can delete cover image',
+    });
+  }
+
+  if (!project.coverImagePublicId) {
+    return res.status(400).json({
+      success: false,
+      message: 'No cover image to delete',
+    });
+  }
+
+  // Delete from Cloudinary
+  await deleteFromCloudinary(project.coverImagePublicId);
+
+  // Update project
+  project.coverImage = null;
+  project.coverImagePublicId = null;
+  await project.save();
+
+  // Audit log
+  await AuditLog.create({
+    userId: req.user._id,
+    action: 'updated',
+    entityType: 'project',
+    entityId: project._id,
+    metadata: { name: project.name, action: 'cover_deleted' },
+  });
+
+  res.json({
+    success: true,
+    message: 'Cover image deleted successfully',
   });
 });

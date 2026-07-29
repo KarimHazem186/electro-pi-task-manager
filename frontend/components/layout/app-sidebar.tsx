@@ -25,7 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import { currentUser } from "@/data/mock";
+import { useApp } from "@/lib/app-context";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 
 export function AppSidebar() {
@@ -36,6 +36,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const pathname = usePathname();
   const router = useRouter();
+  const { currentUser, logout } = useApp();
 
   const mainNav = [
     { title: t("dashboard"), url: "/", icon: LayoutDashboard },
@@ -115,42 +116,52 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t border-border p-2">
         <SidebarMenu>
+          {currentUser && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip={currentUser.name}
+                className="h-auto py-2"
+              >
+                <Link
+                  href="/profile"
+                  locale={locale}
+                  className="flex min-w-0 items-center gap-2.5"
+                >
+                  <UserAvatar user={currentUser} className="size-7 shrink-0" />
+                  {!collapsed && (
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-medium">
+                        {currentUser.name}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {currentUser.email}
+                      </span>
+                    </span>
+                  )}
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              tooltip={currentUser.name}
-              className="h-auto py-2"
+            <SidebarMenuButton 
+              asChild 
+              tooltip={t("logOut")}
+              onClick={async (e) => {
+                e.preventDefault();
+                try {
+                  await logout();
+                } catch (error) {
+                  console.error("Logout error:", error);
+                }
+                // Always redirect to login, even if logout fails
+                router.push("/login");
+              }}
             >
-              <Link
-                href="/profile"
-                locale={locale}
-                className="flex min-w-0 items-center gap-2.5"
-              >
-                <UserAvatar user={currentUser} className="size-7 shrink-0" />
-                {!collapsed && (
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate text-sm font-medium">
-                      {currentUser.name}
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {currentUser.email}
-                    </span>
-                  </span>
-                )}
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip={t("logOut")}>
-              <Link
-                href="/login"
-                locale={locale}
-                className="flex items-center gap-2.5"
-                onClick={() => router.push("/login", { locale })}
-              >
+              <button className="flex w-full items-center gap-2.5">
                 <LogOut className="size-4 shrink-0" />
                 <span>{t("logOut")}</span>
-              </Link>
+              </button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

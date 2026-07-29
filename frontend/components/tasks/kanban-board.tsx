@@ -7,19 +7,23 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TaskCard } from "@/components/tasks/task-card";
 import { EmptyState } from "@/components/shared/empty-state";
-import type { Task, TaskStatus } from "@/types";
+import type { Task, TaskStatus, Project } from "@/types";
 
 const columns: TaskStatus[] = ["todo", "in_progress", "done"];
 
 export function KanbanBoard({
   tasks,
   isLoading,
+  project,
+  canCreate = true,
   onCreate,
   onEdit,
   onDelete,
 }: {
   tasks: Task[];
   isLoading?: boolean;
+  project?: Project | null;
+  canCreate?: boolean;
   onCreate: (status: TaskStatus) => void;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
@@ -44,15 +48,17 @@ export function KanbanBoard({
                   {columnTasks.length}
                 </span>
               </h3>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7"
-                aria-label={t("addToColumn", { name: label })}
-                onClick={() => onCreate(status)}
-              >
-                <Plus className="size-4" />
-              </Button>
+              {canCreate && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  aria-label={t("addToColumn", { name: label })}
+                  onClick={() => onCreate(status)}
+                >
+                  <Plus className="size-4" />
+                </Button>
+              )}
             </header>
 
             <div className="flex flex-col gap-3">
@@ -65,6 +71,7 @@ export function KanbanBoard({
                   <TaskCard
                     key={task.id}
                     task={task}
+                    project={project}
                     onEdit={onEdit}
                     onDelete={onDelete}
                   />

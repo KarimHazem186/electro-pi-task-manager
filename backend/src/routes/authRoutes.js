@@ -108,7 +108,7 @@ router.post('/refresh', refreshToken);
  *       200:
  *         description: Logout successful
  */
-router.post('/logout', protect, logout);
+router.post('/logout', logout);
 
 /**
  * @swagger

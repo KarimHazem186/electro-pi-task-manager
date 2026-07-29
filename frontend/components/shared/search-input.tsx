@@ -26,7 +26,7 @@ export function SearchInput({
   return (
     <div className={cn("relative w-full sm:max-w-xs", className)}>
       <Search
-        className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+        className="pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden
       />
       <Input
@@ -35,7 +35,7 @@ export function SearchInput({
         value={value}
         placeholder={resolvedPlaceholder}
         onChange={(event) => onChange(event.target.value)}
-        className="h-9 rounded-xl pl-9"
+        className="h-9 rounded-xl ps-9"
       />
     </div>
   );

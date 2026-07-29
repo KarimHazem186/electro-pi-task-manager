@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -80,20 +81,23 @@ export function ProjectFormDialog({
         description: project?.description ?? "",
       });
     }
-  }, [open, project, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, project?.id, project?.name, project?.slug, project?.description]);
+  // Note: Using specific project properties instead of whole object to prevent infinite loop
 
-  // Auto-generate slug from name until the user edits the slug manually.
+  // Auto-generate slug from name
   const nameValue = form.watch("name");
-  const slugValue = form.watch("slug");
+  
   useEffect(() => {
     if (!open) return;
-    if (project) return; // don't override the existing slug while editing
+    
+    // Auto-generate slug from name whenever name changes
     const expected = slugify(nameValue ?? "");
-    if (expected && expected !== slugValue) {
+    if (expected) {
       form.setValue("slug", expected, { shouldValidate: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nameValue, open, project]);
+  }, [nameValue, open]);
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     try {
@@ -153,7 +157,13 @@ export function ProjectFormDialog({
                 <FormItem>
                   <FormLabel>{tForm("slugLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={tForm("slugPlaceholder")} {...field} />
+                    <Input 
+                      placeholder={tForm("slugPlaceholder")} 
+                      {...field}
+                      readOnly
+                      disabled
+                      className="bg-muted cursor-not-allowed"
+                    />
                   </FormControl>
                   <FormDescription>{tForm("slugHint")}</FormDescription>
                   <FormMessage />

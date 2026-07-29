@@ -26,8 +26,12 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { KanbanBoard } from "@/components/tasks/kanban-board";
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
 import { ProjectFormDialog } from "@/components/projects/project-form-dialog";
+import { ImageUpload } from "@/components/shared/image-upload";
 import { useDeleteProject, useProjectBySlug } from "@/hooks/use-projects";
 import { useAllTasks, useDeleteTask } from "@/hooks/use-tasks";
+import { useProjectCover } from "@/hooks/use-upload";
+import { useApp } from "@/lib/app-context";
+import { canManageProject, canCreateTask } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
 import { Link, useRouter } from "@/i18n/routing";
 import type { Task, TaskStatus } from "@/types";
@@ -37,6 +41,7 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
   const tNav = useTranslations("nav");
   const tTasks = useTranslations("tasks");
   const tCommon = useTranslations("common");
+  const tUpload = useTranslations("upload");
 
   const router = useRouter();
   const { data: project, isLoading } = useProjectBySlug(projectSlug);
@@ -46,6 +51,14 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
   );
   const removeProject = useDeleteProject();
   const removeTask = useDeleteTask();
+
+  const { currentUser } = useApp();
+  const canManage = canManageProject(currentUser, project);
+  const canCreate = canCreateTask(currentUser, project);
+  
+  const { uploadCover, deleteCover, isUploading, isDeleting } = useProjectCover(
+    project?.id ?? ""
+  );
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -102,20 +115,26 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
         description={project.description}
         actions={
           <>
-            <Button variant="outline" onClick={() => setEditOpen(true)}>
-              <Pencil className="size-4" /> {tCommon("edit")}
-            </Button>
-            <Button variant="outline" onClick={() => setDeleteOpen(true)}>
-              <Trash2 className="size-4" /> {tCommon("delete")}
-            </Button>
-            <Button
-              onClick={() => {
-                setEditingTask(null);
-                setTaskOpen(true);
-              }}
-            >
-              <Plus className="size-4" /> {t("details.newTask")}
-            </Button>
+            {canManage && (
+              <>
+                <Button variant="outline" onClick={() => setEditOpen(true)}>
+                  <Pencil className="size-4" /> {tCommon("edit")}
+                </Button>
+                <Button variant="outline" onClick={() => setDeleteOpen(true)}>
+                  <Trash2 className="size-4" /> {tCommon("delete")}
+                </Button>
+              </>
+            )}
+            {canCreate && (
+              <Button
+                onClick={() => {
+                  setEditingTask(null);
+                  setTaskOpen(true);
+                }}
+              >
+                <Plus className="size-4" /> {t("details.newTask")}
+              </Button>
+            )}
           </>
         }
       />
@@ -129,9 +148,11 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
           <TabsTrigger value="members">
             {t("details.tabs.members")}
           </TabsTrigger>
-          <TabsTrigger value="settings">
-            {t("details.tabs.settings")}
-          </TabsTrigger>
+          {canManage && (
+            <TabsTrigger value="settings">
+              {t("details.tabs.settings")}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -163,6 +184,8 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
           <KanbanBoard
             tasks={tasks.data ?? []}
             isLoading={tasks.isLoading}
+            project={project}
+            canCreate={canCreate}
             onCreate={(status) => {
               setEditingTask(null);
               setDefaultStatus(status);
@@ -216,23 +239,54 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings">
-          <Card className="rounded-xl border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-base">
-                {t("details.dangerZone")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-sm text-muted-foreground">
-                {t("details.dangerZoneDesc")}
-              </p>
-              <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
-                <Trash2 className="size-4" /> {t("details.deleteProject")}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {canManage && (
+          <TabsContent value="settings" className="space-y-4">
+            <Card className="rounded-xl border-border shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {tUpload("projectCover.title")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ImageUpload
+                  value={project.coverImage || undefined}
+                  onFileSelect={(file) => uploadCover(file)}
+                  isUploading={isUploading}
+                  aspectRatio="video"
+                  className="max-w-2xl"
+                />
+                {project.coverImage && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => deleteCover()}
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="size-4" />
+                    {isDeleting ? tUpload("image.uploading") : tUpload("projectCover.remove")}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+            
+            <Card className="rounded-xl border-border shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {t("details.dangerZone")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {t("details.dangerZoneDesc")}
+                </p>
+                <Button variant="destructive" onClick={() => setDeleteOpen(true)}>
+                  <Trash2 className="size-4" /> {t("details.deleteProject")}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
 
       <ProjectFormDialog

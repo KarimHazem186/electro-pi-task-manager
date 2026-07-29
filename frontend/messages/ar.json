@@ -243,7 +243,8 @@
       "submitCreate": "إنشاء المهمة",
       "submitUpdate": "حفظ التغييرات",
       "errors": {
-        "titleMin": "يجب أن يكون العنوان 3 أحرف على الأقل"
+        "titleMin": "يجب أن يكون العنوان 3 أحرف على الأقل",
+        "projectRequired": "المشروع مطلوب"
       }
     },
     "delete": {
@@ -257,6 +258,8 @@
     "invite": "دعوة عضو",
     "searchPlaceholder": "ابحث في الأعضاء…",
     "remove": "إزالة",
+    "copyEmail": "نسخ البريد الإلكتروني",
+    "emailCopied": "تم نسخ البريد الإلكتروني",
     "noMembers": "لم يتم العثور على أعضاء",
     "inviteHint": "تتطلب الدعوات طبقة API.",
     "table": {
@@ -266,14 +269,33 @@
       "projects": "المشاريع",
       "joined": "انضم في"
     },
+    "stats": {
+      "total": "إجمالي الأعضاء"
+    },
     "removeDialog": {
       "title": "إزالة العضو؟",
-      "description": "سيفقد {name} صلاحية الوصول إلى مساحة العمل هذه."
+      "description": "سيفقد {name} صلاحية الوصول إلى مساحة العمل هذه.",
+      "success": "تم إزالة العضو بنجاح"
+    },
+    "inviteDialog": {
+      "title": "دعوة عضو",
+      "description": "أرسل دعوة للانضمام إلى مساحة العمل هذه.",
+      "emailHint": "سيتلقى رسالة دعوة عبر البريد الإلكتروني.",
+      "selectRole": "اختر دورًا",
+      "roleHint": "يحدد ما يمكن للعضو القيام به في مساحة العمل.",
+      "submit": "إرسال الدعوة",
+      "success": "تم إرسال الدعوة إلى {email}",
+      "error": "فشل إرسال الدعوة"
     },
     "roles": {
       "admin": "مسؤول",
       "manager": "مدير",
       "member": "عضو"
+    },
+    "roleDescriptions": {
+      "admin": "وصول كامل لجميع إعدادات مساحة العمل",
+      "manager": "إدارة المشاريع وأعضاء الفريق",
+      "member": "عرض المشاريع والمساهمة فيها"
     }
   },
   "profile": {
@@ -351,5 +373,74 @@
   },
   "empty": {
     "default": "لا شيء للعرض"
+  },
+  "upload": {
+    "image": {
+      "title": "رفع صورة",
+      "dropzone": "اسحب الصورة هنا أو اضغط للرفع",
+      "maxSize": "الحد الأقصى: {size} ميجابايت",
+      "selectImage": "اختر صورة",
+      "change": "تغيير الصورة",
+      "remove": "إزالة الصورة",
+      "uploading": "جارٍ الرفع...",
+      "uploadSuccess": "تم رفع الصورة بنجاح",
+      "uploadError": "فشل رفع الصورة",
+      "deleteSuccess": "تم حذف الصورة بنجاح",
+      "deleteError": "فشل حذف الصورة"
+    },
+    "avatar": {
+      "title": "الصورة الشخصية",
+      "upload": "رفع صورة",
+      "change": "تغيير الصورة",
+      "remove": "إزالة الصورة",
+      "uploading": "جارٍ الرفع...",
+      "deleting": "جارٍ الحذف...",
+      "updateSuccess": "تم تحديث الصورة الشخصية بنجاح",
+      "deleteSuccess": "تم حذف الصورة الشخصية بنجاح"
+    },
+    "attachment": {
+      "title": "المرفقات",
+      "add": "إضافة مرفق",
+      "addMultiple": "إضافة مرفقات",
+      "uploadedBy": "رفعه {name}",
+      "uploadedAt": "رُفِع في {date}",
+      "noAttachments": "لا توجد مرفقات بعد",
+      "addFirst": "أضف أول مرفق",
+      "deleteConfirm": "حذف هذا المرفق؟",
+      "deleteSuccess": "تم حذف المرفق بنجاح",
+      "addSuccess": "تم إضافة المرفق بنجاح"
+    },
+    "projectCover": {
+      "title": "غلاف المشروع",
+      "upload": "رفع غلاف",
+      "change": "تغيير الغلاف",
+      "remove": "إزالة الغلاف",
+      "updateSuccess": "تم تحديث غلاف المشروع بنجاح",
+      "deleteSuccess": "تم حذف غلاف المشروع بنجاح"
+    },
+    "errors": {
+      "invalidType": "فقط ملفات الصور مسموحة",
+      "tooLarge": "حجم الصورة يجب أن يكون أقل من {size} ميجابايت",
+      "uploadFailed": "فشل رفع الصورة",
+      "deleteFailed": "فشل حذف الصورة",
+      "networkError": "خطأ في الاتصال. يرجى التحقق من اتصال الإنترنت."
+    },
+    "validation": {
+      "required": "يرجى اختيار صورة",
+      "invalidFormat": "صيغة الصورة غير صالحة",
+      "tooLarge": "الملف كبير جدًا"
+    }
+  },
+  "notifications": {
+    "taskCreated": "مهمة جديدة: {title}",
+    "taskCreatedDesc": "تم إنشاء مهمة جديدة",
+    "taskUpdated": "تم تحديث المهمة: {title}",
+    "taskUpdatedDesc": "تم تحديث تفاصيل المهمة",
+    "taskDeleted": "تم حذف المهمة",
+    "taskDeletedDesc": "تم إزالة مهمة",
+    "taskCompleted": "اكتملت المهمة: {title}",
+    "taskCompletedDesc": "عمل رائع! تم وضع علامة على المهمة كمكتملة",
+    "taskStatusChanged": "المهمة {title} → {status}",
+    "taskStatusChangedDesc": "تغيرت حالة المهمة"
   }
 }

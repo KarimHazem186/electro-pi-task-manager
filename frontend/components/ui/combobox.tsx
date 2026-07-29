@@ -99,7 +99,7 @@ export function Combobox({
   }, [open]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={false}>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           id={id}
@@ -159,10 +159,15 @@ export function Combobox({
           className,
         )}
         align="start"
+        sideOffset={4}
         onOpenAutoFocus={(event) => {
           // Prevent stealing focus from the trigger so the input is focused
           // via Command's own behaviour.
           event.preventDefault();
+        }}
+        onWheel={(e) => {
+          // Allow wheel events to propagate to the scrollable content
+          e.stopPropagation();
         }}
       >
         <Command shouldFilter={false} loop>

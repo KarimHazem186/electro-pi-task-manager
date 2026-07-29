@@ -19,7 +19,11 @@ export const metadata: Metadata = {
   title: "Task Manager",
   description:
     "Full-stack task management system with real-time collaboration and team workflows.",
-  icons: { icon: "/favicon.ico" },
+  icons: { 
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" }
+    ]
+  },
 };
 
 /**

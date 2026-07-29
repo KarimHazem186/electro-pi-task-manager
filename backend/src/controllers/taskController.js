@@ -4,6 +4,7 @@ import ProjectMember from '../models/ProjectMember.js';
 import AuditLog from '../models/AuditLog.js';
 import { asyncHandler } from '../middleware/error.js';
 import { emitTaskCreated, emitTaskUpdated, emitTaskDeleted, emitTaskStatusChanged } from '../config/socket.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../utils/uploadHelper.js';
 
 /**
  * @route   GET /api/tasks
@@ -35,15 +36,22 @@ export const getTasks = asyncHandler(async (req, res) => {
     const ownedProjects = await Project.find({ ownerId: req.user._id }).select('_id');
     
     const accessibleProjectIds = [
-      ...memberships.map((m) => m.projectId),
-      ...ownedProjects.map((p) => p._id),
+      ...memberships.map((m) => m.projectId.toString()),
+      ...ownedProjects.map((p) => p._id.toString()),
     ];
 
-    query.projectId = { $in: accessibleProjectIds };
-  }
-
-  // Apply filters
-  if (projectId) {
+    if (projectId) {
+      if (!accessibleProjectIds.includes(projectId.toString())) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have access to this project',
+        });
+      }
+      query.projectId = projectId;
+    } else {
+      query.projectId = { $in: accessibleProjectIds };
+    }
+  } else if (projectId) {
     query.projectId = projectId;
   }
 
@@ -79,13 +87,41 @@ export const getTasks = asyncHandler(async (req, res) => {
 
   // Transform tasks
   const transformedTasks = tasks.map((task) => {
-    const taskObj = task.toJSON();
-    if (taskObj.assigneeId) {
-      taskObj.assignee = taskObj.assigneeId;
+    const taskObj = task.toObject();
+    // When populated, assigneeId becomes the full user object
+    if (taskObj.assigneeId && typeof taskObj.assigneeId === 'object') {
+      taskObj.assignee = {
+        id: taskObj.assigneeId._id.toString(),
+        name: taskObj.assigneeId.name,
+        email: taskObj.assigneeId.email,
+        avatarUrl: taskObj.assigneeId.avatarUrl,
+        role: taskObj.assigneeId.role,
+      };
+      taskObj.assigneeId = taskObj.assigneeId._id.toString();
+    } else {
+      taskObj.assigneeId = taskObj.assigneeId?.toString() || null;
+      taskObj.assignee = null;
     }
-    if (taskObj.creatorId) {
-      taskObj.creator = taskObj.creatorId;
+    
+    // Same for creatorId
+    if (taskObj.creatorId && typeof taskObj.creatorId === 'object') {
+      taskObj.creator = {
+        id: taskObj.creatorId._id.toString(),
+        name: taskObj.creatorId.name,
+        email: taskObj.creatorId.email,
+        avatarUrl: taskObj.creatorId.avatarUrl,
+        role: taskObj.creatorId.role,
+      };
+      taskObj.creatorId = taskObj.creatorId._id.toString();
+    } else {
+      taskObj.creatorId = taskObj.creatorId?.toString();
     }
+    
+    taskObj.id = taskObj._id.toString();
+    taskObj.projectId = taskObj.projectId.toString();
+    delete taskObj._id;
+    delete taskObj.__v;
+    
     return taskObj;
   });
 
@@ -116,15 +152,22 @@ export const getAllTasks = asyncHandler(async (req, res) => {
     const ownedProjects = await Project.find({ ownerId: req.user._id }).select('_id');
     
     const accessibleProjectIds = [
-      ...memberships.map((m) => m.projectId),
-      ...ownedProjects.map((p) => p._id),
+      ...memberships.map((m) => m.projectId.toString()),
+      ...ownedProjects.map((p) => p._id.toString()),
     ];
 
-    query.projectId = { $in: accessibleProjectIds };
-  }
-
-  // Apply filters
-  if (projectId) {
+    if (projectId) {
+      if (!accessibleProjectIds.includes(projectId.toString())) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have access to this project',
+        });
+      }
+      query.projectId = projectId;
+    } else {
+      query.projectId = { $in: accessibleProjectIds };
+    }
+  } else if (projectId) {
     query.projectId = projectId;
   }
 
@@ -152,13 +195,41 @@ export const getAllTasks = asyncHandler(async (req, res) => {
 
   // Transform tasks
   const transformedTasks = tasks.map((task) => {
-    const taskObj = task.toJSON();
-    if (taskObj.assigneeId) {
-      taskObj.assignee = taskObj.assigneeId;
+    const taskObj = task.toObject();
+    // When populated, assigneeId becomes the full user object
+    if (taskObj.assigneeId && typeof taskObj.assigneeId === 'object') {
+      taskObj.assignee = {
+        id: taskObj.assigneeId._id.toString(),
+        name: taskObj.assigneeId.name,
+        email: taskObj.assigneeId.email,
+        avatarUrl: taskObj.assigneeId.avatarUrl,
+        role: taskObj.assigneeId.role,
+      };
+      taskObj.assigneeId = taskObj.assigneeId._id.toString();
+    } else {
+      taskObj.assigneeId = taskObj.assigneeId?.toString() || null;
+      taskObj.assignee = null;
     }
-    if (taskObj.creatorId) {
-      taskObj.creator = taskObj.creatorId;
+    
+    // Same for creatorId
+    if (taskObj.creatorId && typeof taskObj.creatorId === 'object') {
+      taskObj.creator = {
+        id: taskObj.creatorId._id.toString(),
+        name: taskObj.creatorId.name,
+        email: taskObj.creatorId.email,
+        avatarUrl: taskObj.creatorId.avatarUrl,
+        role: taskObj.creatorId.role,
+      };
+      taskObj.creatorId = taskObj.creatorId._id.toString();
+    } else {
+      taskObj.creatorId = taskObj.creatorId?.toString();
     }
+    
+    taskObj.id = taskObj._id.toString();
+    taskObj.projectId = taskObj.projectId.toString();
+    delete taskObj._id;
+    delete taskObj.__v;
+    
     return taskObj;
   });
 
@@ -202,13 +273,40 @@ export const getTaskById = asyncHandler(async (req, res) => {
     }
   }
 
-  const taskObj = task.toJSON();
-  if (taskObj.assigneeId) {
-    taskObj.assignee = taskObj.assigneeId;
+  const taskObj = task.toObject();
+  // When populated, assigneeId becomes the full user object
+  if (taskObj.assigneeId && typeof taskObj.assigneeId === 'object') {
+    taskObj.assignee = {
+      id: taskObj.assigneeId._id.toString(),
+      name: taskObj.assigneeId.name,
+      email: taskObj.assigneeId.email,
+      avatarUrl: taskObj.assigneeId.avatarUrl,
+      role: taskObj.assigneeId.role,
+    };
+    taskObj.assigneeId = taskObj.assigneeId._id.toString();
+  } else {
+    taskObj.assigneeId = taskObj.assigneeId?.toString() || null;
+    taskObj.assignee = null;
   }
-  if (taskObj.creatorId) {
-    taskObj.creator = taskObj.creatorId;
+  
+  // Same for creatorId
+  if (taskObj.creatorId && typeof taskObj.creatorId === 'object') {
+    taskObj.creator = {
+      id: taskObj.creatorId._id.toString(),
+      name: taskObj.creatorId.name,
+      email: taskObj.creatorId.email,
+      avatarUrl: taskObj.creatorId.avatarUrl,
+      role: taskObj.creatorId.role,
+    };
+    taskObj.creatorId = taskObj.creatorId._id.toString();
+  } else {
+    taskObj.creatorId = taskObj.creatorId?.toString();
   }
+  
+  taskObj.id = taskObj._id.toString();
+  taskObj.projectId = taskObj.projectId.toString();
+  delete taskObj._id;
+  delete taskObj.__v;
 
   res.json({
     success: true,
@@ -265,13 +363,40 @@ export const createTask = asyncHandler(async (req, res) => {
     .populate('creatorId', 'name email avatarUrl role');
 
   // Transform task
-  const taskObj = populatedTask.toJSON();
-  if (taskObj.assigneeId) {
-    taskObj.assignee = taskObj.assigneeId;
+  const taskObj = populatedTask.toObject();
+  // When populated, assigneeId becomes the full user object
+  if (taskObj.assigneeId && typeof taskObj.assigneeId === 'object') {
+    taskObj.assignee = {
+      id: taskObj.assigneeId._id.toString(),
+      name: taskObj.assigneeId.name,
+      email: taskObj.assigneeId.email,
+      avatarUrl: taskObj.assigneeId.avatarUrl,
+      role: taskObj.assigneeId.role,
+    };
+    taskObj.assigneeId = taskObj.assigneeId._id.toString();
+  } else {
+    taskObj.assigneeId = taskObj.assigneeId?.toString() || null;
+    taskObj.assignee = null;
   }
-  if (taskObj.creatorId) {
-    taskObj.creator = taskObj.creatorId;
+  
+  // Same for creatorId
+  if (taskObj.creatorId && typeof taskObj.creatorId === 'object') {
+    taskObj.creator = {
+      id: taskObj.creatorId._id.toString(),
+      name: taskObj.creatorId.name,
+      email: taskObj.creatorId.email,
+      avatarUrl: taskObj.creatorId.avatarUrl,
+      role: taskObj.creatorId.role,
+    };
+    taskObj.creatorId = taskObj.creatorId._id.toString();
+  } else {
+    taskObj.creatorId = taskObj.creatorId?.toString();
   }
+  
+  taskObj.id = taskObj._id.toString();
+  taskObj.projectId = taskObj.projectId.toString();
+  delete taskObj._id;
+  delete taskObj.__v;
 
   // Audit log
   await AuditLog.create({
@@ -341,13 +466,40 @@ export const updateTask = asyncHandler(async (req, res) => {
     .populate('creatorId', 'name email avatarUrl role');
 
   // Transform task
-  const taskObj = updatedTask.toJSON();
-  if (taskObj.assigneeId) {
-    taskObj.assignee = taskObj.assigneeId;
+  const taskObj = updatedTask.toObject();
+  // When populated, assigneeId becomes the full user object
+  if (taskObj.assigneeId && typeof taskObj.assigneeId === 'object') {
+    taskObj.assignee = {
+      id: taskObj.assigneeId._id.toString(),
+      name: taskObj.assigneeId.name,
+      email: taskObj.assigneeId.email,
+      avatarUrl: taskObj.assigneeId.avatarUrl,
+      role: taskObj.assigneeId.role,
+    };
+    taskObj.assigneeId = taskObj.assigneeId._id.toString();
+  } else {
+    taskObj.assigneeId = taskObj.assigneeId?.toString() || null;
+    taskObj.assignee = null;
   }
-  if (taskObj.creatorId) {
-    taskObj.creator = taskObj.creatorId;
+  
+  // Same for creatorId
+  if (taskObj.creatorId && typeof taskObj.creatorId === 'object') {
+    taskObj.creator = {
+      id: taskObj.creatorId._id.toString(),
+      name: taskObj.creatorId.name,
+      email: taskObj.creatorId.email,
+      avatarUrl: taskObj.creatorId.avatarUrl,
+      role: taskObj.creatorId.role,
+    };
+    taskObj.creatorId = taskObj.creatorId._id.toString();
+  } else {
+    taskObj.creatorId = taskObj.creatorId?.toString();
   }
+  
+  taskObj.id = taskObj._id.toString();
+  taskObj.projectId = taskObj.projectId.toString();
+  delete taskObj._id;
+  delete taskObj.__v;
 
   // Log status change
   if (changes.status && changes.status !== oldStatus) {
@@ -368,6 +520,7 @@ export const updateTask = asyncHandler(async (req, res) => {
       entityType: 'task',
       entityId: task._id,
       changes,
+      metadata: { title: task.title },
     });
     // Emit updated event
     emitTaskUpdated(task.projectId.toString(), taskObj);
@@ -428,5 +581,134 @@ export const deleteTask = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     message: 'Task deleted successfully',
+  });
+});
+
+/**
+ * @route   POST /api/tasks/:id/attachments
+ * @desc    Add attachment to task
+ * @access  Private
+ */
+export const addTaskAttachment = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please upload an image file',
+    });
+  }
+
+  const task = await Task.findById(req.params.id);
+  if (!task) {
+    return res.status(404).json({
+      success: false,
+      message: 'Task not found',
+    });
+  }
+
+  // Check permissions
+  const project = await Project.findById(task.projectId);
+  if (req.user.role !== 'admin' && project.ownerId.toString() !== req.user._id.toString()) {
+    const membership = await ProjectMember.findOne({
+      projectId: task.projectId,
+      userId: req.user._id,
+    });
+
+    if (!membership || membership.role === 'viewer') {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to update this task',
+      });
+    }
+  }
+
+  // Upload to Cloudinary
+  const result = await uploadToCloudinary(req.file.buffer, 'task-manager/task-attachments');
+
+  // Add to task attachments
+  task.attachments.push({
+    url: result.secure_url,
+    publicId: result.public_id,
+    uploadedBy: req.user._id,
+    uploadedAt: new Date(),
+  });
+
+  await task.save();
+
+  // Audit log
+  await AuditLog.create({
+    userId: req.user._id,
+    action: 'updated',
+    entityType: 'task',
+    entityId: task._id,
+    metadata: { title: task.title, action: 'attachment_added' },
+  });
+
+  res.json({
+    success: true,
+    message: 'Attachment added successfully',
+    data: {
+      attachments: task.attachments,
+    },
+  });
+});
+
+/**
+ * @route   DELETE /api/tasks/:id/attachments/:attachmentId
+ * @desc    Delete attachment from task
+ * @access  Private
+ */
+export const deleteTaskAttachment = asyncHandler(async (req, res) => {
+  const task = await Task.findById(req.params.id);
+  if (!task) {
+    return res.status(404).json({
+      success: false,
+      message: 'Task not found',
+    });
+  }
+
+  // Check permissions
+  const project = await Project.findById(task.projectId);
+  if (req.user.role !== 'admin' && project.ownerId.toString() !== req.user._id.toString()) {
+    const membership = await ProjectMember.findOne({
+      projectId: task.projectId,
+      userId: req.user._id,
+    });
+
+    if (!membership || membership.role === 'viewer') {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to update this task',
+      });
+    }
+  }
+
+  // Find attachment
+  const attachment = task.attachments.id(req.params.attachmentId);
+  if (!attachment) {
+    return res.status(404).json({
+      success: false,
+      message: 'Attachment not found',
+    });
+  }
+
+  // Delete from Cloudinary
+  await deleteFromCloudinary(attachment.publicId);
+
+  // Remove from task
+  task.attachments.pull(req.params.attachmentId);
+  await task.save();
+
+  // Audit log
+  await AuditLog.create({
+    userId: req.user._id,
+    action: 'updated',
+    entityType: 'task',
+    entityId: task._id,
+    metadata: { title: task.title, action: 'attachment_deleted' },
+  });
+
+  res.json({
+    success: true,
+    message: 'Attachment deleted successfully',
   });
 });

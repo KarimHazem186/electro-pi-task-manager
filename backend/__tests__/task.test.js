@@ -12,7 +12,10 @@ describe('Task API', () => {
   let project;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/taskmanager-test');
+    // Connect to test database (MongoDB Memory Server URI is set in globalSetup)
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(process.env.MONGODB_URI);
+    }
   });
 
   afterAll(async () => {
@@ -41,7 +44,7 @@ describe('Task API', () => {
     const loginRes = await request(app)
       .post('/api/auth/login')
       .send({ email: 'test@example.com', password: 'Test@123456' });
-    token = loginRes.body.token;
+    token = loginRes.body.tokens?.accessToken;
 
     // Create project
     project = await Project.create({

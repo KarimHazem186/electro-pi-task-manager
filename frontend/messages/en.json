@@ -243,7 +243,8 @@
       "submitCreate": "Create task",
       "submitUpdate": "Save changes",
       "errors": {
-        "titleMin": "Title must be at least 3 characters"
+        "titleMin": "Title must be at least 3 characters",
+        "projectRequired": "Project is required"
       }
     },
     "delete": {
@@ -257,6 +258,8 @@
     "invite": "Invite member",
     "searchPlaceholder": "Search members…",
     "remove": "Remove",
+    "copyEmail": "Copy email",
+    "emailCopied": "Email copied to clipboard",
     "noMembers": "No members found",
     "inviteHint": "Invitations require the API layer.",
     "table": {
@@ -266,14 +269,33 @@
       "projects": "Projects",
       "joined": "Joined"
     },
+    "stats": {
+      "total": "Total Members"
+    },
     "removeDialog": {
       "title": "Remove member?",
-      "description": "{name} will lose access to this workspace."
+      "description": "{name} will lose access to this workspace.",
+      "success": "Member removed successfully"
+    },
+    "inviteDialog": {
+      "title": "Invite member",
+      "description": "Send an invitation to join this workspace.",
+      "emailHint": "They will receive an invitation email.",
+      "selectRole": "Select a role",
+      "roleHint": "Defines what the member can do in the workspace.",
+      "submit": "Send invitation",
+      "success": "Invitation sent to {email}",
+      "error": "Failed to send invitation"
     },
     "roles": {
       "admin": "Admin",
       "manager": "Manager",
       "member": "Member"
+    },
+    "roleDescriptions": {
+      "admin": "Full access to all workspace settings",
+      "manager": "Manage projects and team members",
+      "member": "View and contribute to projects"
     }
   },
   "profile": {
@@ -351,5 +373,74 @@
   },
   "empty": {
     "default": "Nothing to show"
+  },
+  "upload": {
+    "image": {
+      "title": "Upload Image",
+      "dropzone": "Drop image here or click to upload",
+      "maxSize": "Max size: {size}MB",
+      "selectImage": "Select image",
+      "change": "Change image",
+      "remove": "Remove image",
+      "uploading": "Uploading...",
+      "uploadSuccess": "Image uploaded successfully",
+      "uploadError": "Failed to upload image",
+      "deleteSuccess": "Image deleted successfully",
+      "deleteError": "Failed to delete image"
+    },
+    "avatar": {
+      "title": "Profile Picture",
+      "upload": "Upload photo",
+      "change": "Change photo",
+      "remove": "Remove photo",
+      "uploading": "Uploading...",
+      "deleting": "Deleting...",
+      "updateSuccess": "Profile picture updated successfully",
+      "deleteSuccess": "Profile picture deleted successfully"
+    },
+    "attachment": {
+      "title": "Attachments",
+      "add": "Add attachment",
+      "addMultiple": "Add attachments",
+      "uploadedBy": "Uploaded by {name}",
+      "uploadedAt": "Uploaded {date}",
+      "noAttachments": "No attachments yet",
+      "addFirst": "Add your first attachment",
+      "deleteConfirm": "Delete this attachment?",
+      "deleteSuccess": "Attachment deleted successfully",
+      "addSuccess": "Attachment added successfully"
+    },
+    "projectCover": {
+      "title": "Project Cover",
+      "upload": "Upload cover",
+      "change": "Change cover",
+      "remove": "Remove cover",
+      "updateSuccess": "Cover image updated successfully",
+      "deleteSuccess": "Cover image deleted successfully"
+    },
+    "errors": {
+      "invalidType": "Only image files are allowed",
+      "tooLarge": "Image size must be less than {size}MB",
+      "uploadFailed": "Failed to upload image",
+      "deleteFailed": "Failed to delete image",
+      "networkError": "Network error. Please check your connection."
+    },
+    "validation": {
+      "required": "Please select an image",
+      "invalidFormat": "Invalid image format",
+      "tooLarge": "File is too large"
+    }
+  },
+  "notifications": {
+    "taskCreated": "New task: {title}",
+    "taskCreatedDesc": "A new task has been created",
+    "taskUpdated": "Task updated: {title}",
+    "taskUpdatedDesc": "Task details have been updated",
+    "taskDeleted": "Task deleted",
+    "taskDeletedDesc": "A task has been removed",
+    "taskCompleted": "Task completed: {title}",
+    "taskCompletedDesc": "Great work! Task marked as done",
+    "taskStatusChanged": "Task {title} → {status}",
+    "taskStatusChangedDesc": "Task status has changed"
   }
 }

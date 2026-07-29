@@ -31,6 +31,14 @@ const projectSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    coverImage: {
+      type: String,
+      default: null,
+    },
+    coverImagePublicId: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

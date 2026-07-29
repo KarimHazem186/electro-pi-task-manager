@@ -9,6 +9,8 @@ import {
   getProjectMembers,
   addProjectMember,
   removeProjectMember,
+  updateProjectCover,
+  deleteProjectCover,
 } from '../controllers/projectController.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { checkProjectAccess } from '../middleware/permissions.js';
@@ -20,6 +22,7 @@ import {
   addProjectMemberSchema,
   removeProjectMemberSchema,
 } from '../validators/zodSchemas.js';
+import { upload } from '../utils/uploadHelper.js';
 
 const router = express.Router();
 
@@ -33,6 +36,10 @@ router.get('/by-slug/:slug', getProjectBySlug);
 router.get('/:id', zodValidate(projectIdSchema), getProjectById);
 router.patch('/:id', zodValidate(updateProjectSchema), updateProject);
 router.delete('/:id', zodValidate(projectIdSchema), deleteProject);
+
+// Cover image routes
+router.put('/:id/cover', zodValidate(projectIdSchema), upload.single('image'), updateProjectCover);
+router.delete('/:id/cover', zodValidate(projectIdSchema), deleteProjectCover);
 
 // Project members
 router.get('/:projectId/members', checkProjectAccess(), getProjectMembers);

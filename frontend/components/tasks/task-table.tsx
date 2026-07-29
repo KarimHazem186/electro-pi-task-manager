@@ -23,6 +23,8 @@ import {
 import { PriorityBadge, StatusBadge } from "@/components/shared/badges";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { EmptyState } from "@/components/shared/empty-state";
+import { useApp } from "@/lib/app-context";
+import { canModifyTask } from "@/lib/permissions";
 import { dueDateTone, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/types";
@@ -44,6 +46,7 @@ export function TaskTable({
 }) {
   const t = useTranslations("tasks");
   const tCommon = useTranslations("common");
+  const { currentUser } = useApp();
 
   if (!isLoading && tasks.length === 0) {
     return (
@@ -75,7 +78,7 @@ export function TaskTable({
               <TableHead>{tCommon("status")}</TableHead>
               <TableHead>{tCommon("assignee")}</TableHead>
               <TableHead>{tCommon("dueDate")}</TableHead>
-              <TableHead className="w-12 text-right">
+              <TableHead className="w-12 text-end">
                 {tCommon("actions")}
               </TableHead>
             </TableRow>
@@ -91,69 +94,76 @@ export function TaskTable({
                   ))}
                 </TableRow>
               ))
-              : tasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell className="max-w-xs">
-                    <p className="truncate font-medium">{task.title}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {task.description}
-                    </p>
-                  </TableCell>
-                  <TableCell>
-                    <PriorityBadge priority={task.priority} />
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={task.status} />
-                  </TableCell>
-                  <TableCell>
-                    {task.assignee ? (
-                      <span className="flex min-w-0 items-center gap-2">
-                        <UserAvatar
-                          user={task.assignee}
-                          className="size-6"
-                        />
-                        <span className="truncate text-sm">
-                          {task.assignee.name}
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        {t("form.unassigned")}
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell
-                    className={cn("text-sm", dueDateTone(task.dueDate))}
-                  >
-                    {formatDate(task.dueDate)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8"
-                          aria-label={tCommon("actionsFor", { name: task.title })}
-                        >
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-36">
-                        <DropdownMenuItem onSelect={() => onEdit(task)}>
-                          <Pencil className="size-4" /> {tCommon("edit")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onSelect={() => onDelete(task)}
-                        >
-                          <Trash2 className="size-4" /> {tCommon("delete")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              : tasks.map((task) => {
+                const allowed = canModifyTask(currentUser, task);
+                return (
+                  <TableRow key={task.id}>
+                    <TableCell className="max-w-xs">
+                      <p className="truncate font-medium">{task.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {task.description}
+                      </p>
+                    </TableCell>
+                    <TableCell>
+                      <PriorityBadge priority={task.priority} />
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={task.status} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {task.assignee ? (
+                          <>
+                            <UserAvatar
+                              user={task.assignee}
+                              className="size-6"
+                            />
+                            <span className="text-sm">{task.assignee.name}</span>
+                          </>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            {t("form.unassigned")}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell
+                      className={cn("text-sm", dueDateTone(task.dueDate))}
+                    >
+                      {formatDate(task.dueDate)}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      {allowed ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              aria-label={tCommon("actionsFor", { name: task.title })}
+                            >
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem onSelect={() => onEdit(task)}>
+                              <Pencil className="size-4" /> {tCommon("edit")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onSelect={() => onDelete(task)}
+                            >
+                              <Trash2 className="size-4" /> {tCommon("delete")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <span className="text-xs text-muted-foreground px-2">—</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
           </TableBody>
         </Table>
       </div>
@@ -171,43 +181,47 @@ export function TaskTable({
               </div>
             </Card>
           ))
-          : tasks.map((task) => (
-            <Card key={task.id} className="p-4 shadow-soft">
-              <div className="mb-3 flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <h3 className="mb-1 font-medium">{task.title}</h3>
-                  {task.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {task.description}
-                    </p>
+          : tasks.map((task) => {
+            const allowed = canModifyTask(currentUser, task);
+            return (
+              <Card key={task.id} className="p-4 shadow-soft">
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="mb-0.5 font-medium leading-snug">{task.title}</h3>
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                        {task.description}
+                      </p>
+                    )}
+                  </div>
+                  {allowed && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8 shrink-0"
+                          aria-label={tCommon("actionsFor", { name: task.title })}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-36">
+                        <DropdownMenuItem onSelect={() => onEdit(task)}>
+                          <Pencil className="size-4" /> {tCommon("edit")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onSelect={() => onDelete(task)}
+                        >
+                          <Trash2 className="size-4" /> {tCommon("delete")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 shrink-0"
-                      aria-label={tCommon("actionsFor", { name: task.title })}
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-36">
-                    <DropdownMenuItem onSelect={() => onEdit(task)}>
-                      <Pencil className="size-4" /> {tCommon("edit")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onSelect={() => onDelete(task)}
-                    >
-                      <Trash2 className="size-4" /> {tCommon("delete")}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
 
-              <div className="mb-3 flex flex-wrap gap-2">
+              <div className="mb-2 flex flex-wrap gap-2">
                 <PriorityBadge priority={task.priority} />
                 <StatusBadge status={task.status} />
               </div>
@@ -233,7 +247,8 @@ export function TaskTable({
                 </span>
               </div>
             </Card>
-          ))}
+          );
+        })}
       </div>
     </>
   );

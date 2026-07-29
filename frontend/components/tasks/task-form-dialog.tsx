@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { DatePicker } from "@/components/shared/date-picker";
 import { useAllUsers } from "@/hooks/use-users";
+import { useProjects } from "@/hooks/use-projects";
 import { useCreateTask, useUpdateTask } from "@/hooks/use-tasks";
 import type { Task, TaskStatus } from "@/types";
 
@@ -53,6 +54,9 @@ export function TaskFormDialog({
   const tErrors = useTranslations("errors.api");
 
   const { data: users = [] } = useAllUsers();
+  const { data: projectsData } = useProjects({ page: 1, pageSize: 100 });
+  const projects = projectsData?.data ?? [];
+
   const create = useCreateTask();
   const update = useUpdateTask();
   const pending = create.isPending || update.isPending;
@@ -66,8 +70,11 @@ export function TaskFormDialog({
         priority: z.enum(["low", "medium", "high", "urgent"]),
         dueDate: z.string().optional().nullable(),
         assigneeId: z.string().optional().nullable(),
+        projectId: projectId
+          ? z.string().optional().nullable()
+          : z.string().min(1, tFormErrors("projectRequired")),
       }),
-    [tFormErrors],
+    [tFormErrors, projectId],
   );
 
   const form = useForm<z.infer<typeof schema>>({
@@ -80,6 +87,7 @@ export function TaskFormDialog({
       priority: "medium",
       dueDate: null,
       assigneeId: null,
+      projectId: projectId || task?.projectId || "",
     },
   });
 
@@ -92,8 +100,11 @@ export function TaskFormDialog({
       priority: task?.priority ?? "medium",
       dueDate: task?.dueDate ?? null,
       assigneeId: task?.assigneeId ?? null,
+      projectId: projectId || task?.projectId || "",
     });
-  }, [open, task, defaultStatus, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, task?.id, task?.title, task?.status, task?.priority, task?.dueDate, task?.assigneeId, task?.projectId, projectId, defaultStatus]);
+  // Note: Using specific task properties instead of whole object to prevent infinite loop
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
     const payload = {
@@ -101,7 +112,7 @@ export function TaskFormDialog({
       description: values.description ?? "",
       dueDate: values.dueDate ?? null,
       assigneeId: values.assigneeId ?? null,
-      projectId,
+      projectId: projectId || values.projectId || undefined,
     };
     try {
       if (task) {
@@ -186,6 +197,35 @@ export function TaskFormDialog({
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
+              {!projectId && (
+                <FormField
+                  control={form.control}
+                  name="projectId"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>{tForm("projectLabel")}</FormLabel>
+                      <FormControl>
+                        <Combobox
+                          value={field.value}
+                          onValueChange={(value) => {
+                            if (value) field.onChange(value);
+                          }}
+                          options={projects.map((p) => ({
+                            value: p.id,
+                            label: p.name,
+                          }))}
+                          placeholder={tForm("projectLabel")}
+                          searchPlaceholder={`${tCommon("search")}…`}
+                          disabled={Boolean(task)}
+                          triggerClassName="h-9 w-full"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <FormField
                 control={form.control}
                 name="status"

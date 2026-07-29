@@ -18,49 +18,57 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useApp } from "@/lib/app-context";
+import { canModifyTask } from "@/lib/permissions";
 import { dueDateTone, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Task } from "@/types";
+import type { Task, Project } from "@/types";
 
 export function TaskCard({
   task,
+  project,
   onEdit,
   onDelete,
 }: {
   task: Task;
+  project?: Project | null;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
 }) {
   const t = useTranslations("tasks");
   const tCommon = useTranslations("common");
+  const { currentUser } = useApp();
+  const allowed = canModifyTask(currentUser, task, project);
 
   return (
     <Card className="gap-3 rounded-xl border-border bg-card p-3.5 shadow-soft transition-shadow duration-200 hover:shadow-lifted">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
         <p className="min-w-0 text-sm font-medium leading-snug">{task.title}</p>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-7 shrink-0"
-              aria-label={tCommon("actionsFor", { name: task.title })}
-            >
-              <MoreHorizontal className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-36">
-            <DropdownMenuItem onSelect={() => onEdit(task)}>
-              <Pencil className="size-4" /> {tCommon("edit")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onSelect={() => onDelete(task)}
-            >
-              <Trash2 className="size-4" /> {tCommon("delete")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {allowed && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7 shrink-0"
+                aria-label={tCommon("actionsFor", { name: task.title })}
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-36">
+              <DropdownMenuItem onSelect={() => onEdit(task)}>
+                <Pencil className="size-4" /> {tCommon("edit")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={() => onDelete(task)}
+              >
+                <Trash2 className="size-4" /> {tCommon("delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {task.description && (
