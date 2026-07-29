@@ -7,7 +7,7 @@ import {
   ListChecks,
   Plus,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -18,6 +18,7 @@ import { Progress } from "@/components/ui/progress";
 import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { PriorityBadge, StatusBadge } from "@/components/shared/badges";
+import { ActivityItem } from "@/components/dashboard/activity-item";
 import { useActivityFeed, useDashboardStats } from "@/hooks/use-users";
 import { useProjects } from "@/hooks/use-projects";
 import { useAllTasks } from "@/hooks/use-tasks";
@@ -29,6 +30,8 @@ import { Link } from "@/i18n/routing";
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const tEmpty = useTranslations("empty");
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   const { currentUser } = useApp();
 
   const stats = useDashboardStats();
@@ -87,8 +90,8 @@ export default function DashboardPage() {
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3 lg:auto-rows-min">
         <Card className="rounded-xl border-border shadow-soft lg:col-span-2 self-start">
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="text-base">{t("recentProjects")}</CardTitle>
+          <CardHeader className={cn("flex-row items-center justify-between", isRtl && "flex-row-reverse")}>
+            <CardTitle className="text-base" dir={isRtl ? "rtl" : "ltr"}>{t("recentProjects")}</CardTitle>
             <Button asChild variant="ghost" size="sm">
               <Link href="/projects">{t("viewAll")}</Link>
             </Button>
@@ -112,7 +115,7 @@ export default function DashboardPage() {
                     className="block rounded-xl border border-border p-4 transition-colors duration-200 hover:bg-secondary/60"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <p className="truncate text-sm font-medium">
+                      <p className="truncate text-sm font-medium" dir="auto">
                         {project.name}
                       </p>
                       <span className="shrink-0 text-xs text-muted-foreground">
@@ -144,7 +147,7 @@ export default function DashboardPage() {
                   key={task.id}
                   className="flex items-start justify-between gap-3"
                 >
-                  <p className="min-w-0 truncate text-sm">{task.title}</p>
+                  <p className="min-w-0 truncate text-sm" dir="auto">{task.title}</p>
                   <span
                     className={cn(
                       "shrink-0 text-xs",
@@ -167,8 +170,8 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="rounded-xl border-border shadow-soft lg:col-span-2 self-start">
-          <CardHeader className="flex-row items-center justify-between">
-            <CardTitle className="text-base">{t("myAssignedTasks")}</CardTitle>
+          <CardHeader className={cn("flex-row items-center justify-between", isRtl && "flex-row-reverse")}>
+            <CardTitle className="text-base" dir={isRtl ? "rtl" : "ltr"}>{t("myAssignedTasks")}</CardTitle>
             <Button asChild variant="ghost" size="sm">
               <Link href="/tasks">{t("viewAll")}</Link>
             </Button>
@@ -184,7 +187,7 @@ export default function DashboardPage() {
                   key={task.id}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border p-3"
                 >
-                  <p className="min-w-0 flex-1 truncate text-sm font-medium">
+                  <p className="min-w-0 flex-1 truncate text-sm font-medium" dir="auto">
                     {task.title}
                   </p>
                   <div className="flex shrink-0 items-center gap-2">
@@ -212,45 +215,13 @@ export default function DashboardPage() {
                 <Skeleton key={i} className="h-10 rounded-xl" />
               ))
             ) : activity.data?.length ? (
-              activity.data.map((event) => {
-                const user = event.actor ?? event.user;
-                if (!user) return null;
-                
-                const inner = (
-                  <>
-                    <UserAvatar
-                      user={user}
-                      className="size-7 shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm leading-snug">
-                        <span className="font-medium">{user.name}</span>{" "}
-                        {event.action}{" "}
-                        <span className="font-medium">{event.target}</span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatRelative(event.createdAt ?? event.timestamp)}
-                      </p>
-                    </div>
-                  </>
-                );
-                
-                const baseClasses = "flex min-w-0 items-start gap-3 rounded-lg p-2.5";
-                
-                return event.href ? (
-                  <Link
-                    key={event.id}
-                    href={event.href}
-                    className={cn(baseClasses, "-mx-2 transition-colors hover:bg-secondary/60")}
-                  >
-                    {inner}
-                  </Link>
-                ) : (
-                  <div key={event.id} className={baseClasses}>
-                    {inner}
-                  </div>
-                );
-              })
+              activity.data.map((event) => (
+                <ActivityItem 
+                  key={event.id} 
+                  event={event} 
+                  formatRelative={formatRelative} 
+                />
+              ))
             ) : (
               <EmptyState title={t("noActivity")} />
             )}

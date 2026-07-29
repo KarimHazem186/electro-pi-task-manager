@@ -4,9 +4,10 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { useSocket } from "@/lib/socket";
+import { useSocket, useUserSocket } from "@/lib/socket";
 import { useApp } from "@/lib/app-context";
-import type { Task } from "@/types";
+import { pushNotification } from "@/hooks/use-notifications";
+import type { AppNotification, Task } from "@/types";
 
 /**
  * Socket Notifications Component
@@ -19,13 +20,31 @@ export function SocketNotifications() {
   const { currentUser } = useApp();
   const t = useTranslations("notifications");
 
+  // Join the per-user room so personal notifications reach this client
+  useUserSocket(currentUser?.id);
+
   useEffect(() => {
     if (!socket || !currentUser) return;
+
+    // Personal notification: pop a toast and push into the cache
+    const handleNotificationNew = (notification: AppNotification) => {
+      pushNotification(queryClient, notification);
+
+      // Don't toast yourself (already filtered on the backend, but be safe)
+      if (notification.actorId && notification.actorId === currentUser.id) {
+        return;
+      }
+
+      toast(notification.title, {
+        description: notification.body || undefined,
+        duration: 4000,
+      });
+    };
 
     // Task Created Event
     const handleTaskCreated = (task: Task) => {
       console.log("📥 Task created:", task);
-      
+
       // Show notification if not created by current user
       if (task.creatorId !== currentUser.id) {
         toast.success(t("taskCreated", { title: task.title }), {
@@ -42,7 +61,7 @@ export function SocketNotifications() {
     // Task Updated Event
     const handleTaskUpdated = (task: Task) => {
       console.log("🔄 Task updated:", task);
-      
+
       // Show notification if assigned to current user
       if (task.assigneeId === currentUser.id) {
         toast.info(t("taskUpdated", { title: task.title }), {
@@ -58,7 +77,7 @@ export function SocketNotifications() {
     // Task Deleted Event
     const handleTaskDeleted = (data: { id: string }) => {
       console.log("🗑️ Task deleted:", data.id);
-      
+
       toast.error(t("taskDeleted"), {
         description: t("taskDeletedDesc"),
         duration: 3000,
@@ -72,7 +91,7 @@ export function SocketNotifications() {
     // Task Status Changed Event
     const handleTaskStatusChanged = (task: Task) => {
       console.log("✅ Task status changed:", task);
-      
+
       // Show different notification based on status
       if (task.status === "done") {
         toast.success(t("taskCompleted", { title: task.title }), {
@@ -92,6 +111,7 @@ export function SocketNotifications() {
     };
 
     // Register event listeners
+    socket.on("notification:new", handleNotificationNew);
     socket.on("task:created", handleTaskCreated);
     socket.on("task:updated", handleTaskUpdated);
     socket.on("task:deleted", handleTaskDeleted);
@@ -112,6 +132,7 @@ export function SocketNotifications() {
 
     // Cleanup
     return () => {
+      socket.off("notification:new", handleNotificationNew);
       socket.off("task:created", handleTaskCreated);
       socket.off("task:updated", handleTaskUpdated);
       socket.off("task:deleted", handleTaskDeleted);

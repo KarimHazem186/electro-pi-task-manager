@@ -264,4 +264,106 @@ describe('Project API', () => {
       expect(res.body.data).toBeInstanceOf(Array);
     });
   });
+
+  describe('PATCH /api/projects/:projectId/members/:memberId', () => {
+    it('should update a member role from editor to viewer', async () => {
+      const project = await Project.create({
+        name: 'Test Project',
+        description: 'Test description',
+        ownerId: adminUser._id,
+      });
+      await ProjectMember.create({
+        projectId: project._id,
+        userId: adminUser._id,
+        role: 'owner',
+      });
+      const member = await ProjectMember.create({
+        projectId: project._id,
+        userId: memberUser._id,
+        role: 'editor',
+      });
+
+      const res = await request(app)
+        .patch(`/api/projects/${project._id}/members/${member._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'viewer' });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.role).toBe('viewer');
+    });
+
+    it('should fail when non-owner non-admin tries to change role', async () => {
+      const project = await Project.create({
+        name: 'Test Project',
+        description: 'Test description',
+        ownerId: adminUser._id,
+      });
+      await ProjectMember.create({
+        projectId: project._id,
+        userId: adminUser._id,
+        role: 'owner',
+      });
+      const member = await ProjectMember.create({
+        projectId: project._id,
+        userId: memberUser._id,
+        role: 'editor',
+      });
+
+      const res = await request(app)
+        .patch(`/api/projects/${project._id}/members/${member._id}`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ role: 'viewer' });
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should fail to change the owner role', async () => {
+      const project = await Project.create({
+        name: 'Test Project',
+        description: 'Test description',
+        ownerId: adminUser._id,
+      });
+      const ownerMembership = await ProjectMember.create({
+        projectId: project._id,
+        userId: adminUser._id,
+        role: 'owner',
+      });
+
+      const res = await request(app)
+        .patch(`/api/projects/${project._id}/members/${ownerMembership._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'editor' });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should fail with invalid role value', async () => {
+      const project = await Project.create({
+        name: 'Test Project',
+        description: 'Test description',
+        ownerId: adminUser._id,
+      });
+      await ProjectMember.create({
+        projectId: project._id,
+        userId: adminUser._id,
+        role: 'owner',
+      });
+      const member = await ProjectMember.create({
+        projectId: project._id,
+        userId: memberUser._id,
+        role: 'editor',
+      });
+
+      const res = await request(app)
+        .patch(`/api/projects/${project._id}/members/${member._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'superuser' });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.success).toBe(false);
+    });
+  });
 });

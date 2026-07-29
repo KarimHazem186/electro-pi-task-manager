@@ -42,8 +42,28 @@ export const projectService = {
     return response.data;
   },
 
-  addMember: async (projectId: string, userId: string): Promise<void> => {
-    await api.post(`/projects/${projectId}/members`, { userId });
+  addMember: async (
+    projectId: string,
+    userId: string,
+    role: ProjectMember["role"] = "editor",
+  ): Promise<ProjectMember> => {
+    const response = await api.post<ProjectMember>(`/projects/${projectId}/members`, {
+      userId,
+      role,
+    });
+    return response.data;
+  },
+
+  updateMemberRole: async (
+    projectId: string,
+    memberId: string,
+    role: ProjectMember["role"],
+  ): Promise<ProjectMember> => {
+    const response = await api.patch<ProjectMember>(
+      `/projects/${projectId}/members/${memberId}`,
+      { role },
+    );
+    return response.data;
   },
 
   removeMember: async (projectId: string, memberId: string): Promise<void> => {

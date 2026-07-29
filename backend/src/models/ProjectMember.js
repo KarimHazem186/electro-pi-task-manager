@@ -37,15 +37,22 @@ projectMemberSchema.methods.toJSON = function () {
   const obj = this.toObject();
   obj.id = obj._id.toString();
   obj.projectId = obj.projectId?.toString();
-  obj.userId = obj.userId?.toString();
-  
-  // Transform populated user
-  if (obj.user && obj.user._id) {
-    obj.user.id = obj.user._id.toString();
-    delete obj.user._id;
-    delete obj.user.__v;
+
+  // Handle populated userId: expose it as a `user` object and keep `userId` as a string
+  if (obj.userId && typeof obj.userId === 'object' && obj.userId._id) {
+    const user = obj.userId;
+    obj.user = {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      avatarUrl: user.avatarUrl ?? null,
+      role: user.role,
+    };
+    obj.userId = user._id.toString();
+  } else if (obj.userId) {
+    obj.userId = obj.userId.toString();
   }
-  
+
   delete obj._id;
   delete obj.__v;
   return obj;

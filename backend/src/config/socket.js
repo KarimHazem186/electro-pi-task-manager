@@ -29,6 +29,21 @@ export const initializeSocket = (server) => {
   io.on('connection', (socket) => {
     console.log('✅ Client connected:', socket.id);
 
+    // Each socket can join a per-user room for personal notifications
+    socket.on('join-user', (userId) => {
+      if (userId) {
+        socket.join(`user:${userId}`);
+        console.log(`Socket ${socket.id} joined user:${userId}`);
+      }
+    });
+
+    socket.on('leave-user', (userId) => {
+      if (userId) {
+        socket.leave(`user:${userId}`);
+        console.log(`Socket ${socket.id} left user:${userId}`);
+      }
+    });
+
     // Join project room
     socket.on('join-project', (projectId) => {
       socket.join(`project:${projectId}`);
@@ -65,6 +80,12 @@ export const getIO = () => {
 export const emitToProject = (projectId, event, data) => {
   if (io) {
     io.to(`project:${projectId}`).emit(event, data);
+  }
+};
+
+export const emitToUser = (userId, event, data) => {
+  if (io) {
+    io.to(`user:${userId}`).emit(event, data);
   }
 };
 

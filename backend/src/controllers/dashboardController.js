@@ -126,6 +126,10 @@ export const getDashboardActivity = asyncHandler(async (req, res) => {
   const activities = logs.map((log) => {
     const target = resolveTarget(log, taskMap, projectMap);
     const href = resolveHref(log, taskMap, projectMap, slugMap);
+    
+    // Extract additional details for better display
+    const details = extractActivityDetails(log);
+    
     return {
       id: log._id.toString(),
       type: log.action,
@@ -147,6 +151,8 @@ export const getDashboardActivity = asyncHandler(async (req, res) => {
       timestamp: log.createdAt,
       createdAt: log.createdAt,
       metadata: log.metadata,
+      changes: log.changes, // Include changes for frontend to display
+      details, // Additional formatted details
     };
   });
 
@@ -157,23 +163,141 @@ export const getDashboardActivity = asyncHandler(async (req, res) => {
 });
 
 /**
- * Format activity log message
+ * Format activity log message with more details
  */
 function formatActivityMessage(log, target) {
   const userName = log.userId?.name || 'Someone';
+  const entityType = formatEntityType(log.entityType);
   
   switch (log.action) {
     case 'created':
-      return `${userName} created ${log.entityType} "${target}"`;
+      return `${userName} created ${entityType} "${target}"`;
     case 'updated':
-      return `${userName} updated ${log.entityType} "${target}"`;
+      return `${userName} updated ${entityType} "${target}"`;
     case 'deleted':
-      return `${userName} deleted ${log.entityType} "${target}"`;
+      return `${userName} deleted ${entityType} "${target}"`;
     case 'status_changed':
-      return `${userName} changed status of "${target}" from ${log.changes?.from} to ${log.changes?.to}`;
+      const fromStatus = formatStatus(log.changes?.from);
+      const toStatus = formatStatus(log.changes?.to);
+      return `${userName} moved "${target}" from ${fromStatus} to ${toStatus}`;
+    case 'assigned':
+      const assigneeName = log.metadata?.assigneeName || 'someone';
+      return `${userName} assigned "${target}" to ${assigneeName}`;
+    case 'unassigned':
+      return `${userName} unassigned "${target}"`;
+    case 'priority_changed':
+      const fromPriority = formatPriority(log.changes?.from);
+      const toPriority = formatPriority(log.changes?.to);
+      return `${userName} changed priority of "${target}" from ${fromPriority} to ${toPriority}`;
+    case 'due_date_changed':
+      return `${userName} changed due date of "${target}"`;
     default:
-      return `${userName} performed ${log.action} on ${log.entityType}`;
+      return `${userName} performed ${log.action} on ${entityType}`;
   }
+}
+
+/**
+ * Format entity type for display
+ */
+function formatEntityType(type) {
+  const types = {
+    'task': 'task',
+    'project': 'project',
+    'user': 'user',
+    'project_member': 'team member'
+  };
+  return types[type] || type;
+}
+
+/**
+ * Format status for display
+ */
+function formatStatus(status) {
+  const statuses = {
+    'todo': 'To Do',
+    'in_progress': 'In Progress',
+    'done': 'Done',
+    'backlog': 'Backlog'
+  };
+  return statuses[status] || status;
+}
+
+/**
+ * Format priority for display
+ */
+function formatPriority(priority) {
+  const priorities = {
+    'low': 'Low',
+    'medium': 'Medium',
+    'high': 'High',
+    'urgent': 'Urgent'
+  };
+  return priorities[priority] || priority;
+}
+
+/**
+ * Extract additional activity details for richer display
+ */
+function extractActivityDetails(log) {
+  const details = {
+    actionType: log.action,
+    hasChanges: !!(log.changes && Object.keys(log.changes).length),
+  };
+
+  // Status change details
+  if (log.action === 'status_changed' && log.changes) {
+    details.statusChange = {
+      from: log.changes.from,
+      to: log.changes.to,
+      fromLabel: formatStatus(log.changes.from),
+      toLabel: formatStatus(log.changes.to),
+    };
+  }
+
+  // Priority change details - handle both old format (from/to) and new format (direct value)
+  if (log.action === 'priority_changed' || log.changes?.priority) {
+    if (typeof log.changes?.priority === 'object' && log.changes.priority.from) {
+      // New format: { from: 'low', to: 'high' }
+      details.priorityChange = {
+        from: log.changes.priority.from,
+        to: log.changes.priority.to,
+        fromLabel: formatPriority(log.changes.priority.from),
+        toLabel: formatPriority(log.changes.priority.to),
+      };
+    } else if (log.changes?.from && log.changes?.to && log.action === 'priority_changed') {
+      // Old format: direct from/to at changes level
+      details.priorityChange = {
+        from: log.changes.from,
+        to: log.changes.to,
+        fromLabel: formatPriority(log.changes.from),
+        toLabel: formatPriority(log.changes.to),
+      };
+    } else if (typeof log.changes?.priority === 'string') {
+      // Seed format: direct priority value (for creation)
+      details.prioritySet = {
+        value: log.changes.priority,
+        label: formatPriority(log.changes.priority),
+      };
+    }
+  }
+
+  // Assignment change details
+  if (log.changes?.assigneeId) {
+    details.assignmentChange = {
+      from: log.changes.assigneeId.from,
+      to: log.changes.assigneeId.to,
+    };
+  }
+
+  // Due date change details
+  if (log.changes?.dueDate) {
+    details.dueDateChange = {
+      from: log.changes.dueDate.from,
+      to: log.changes.dueDate.to,
+    };
+  }
+
+  return details;
 }
 
 /**
@@ -185,6 +309,10 @@ function formatAction(action) {
     case 'updated': return 'updated';
     case 'deleted': return 'deleted';
     case 'status_changed': return 'changed status of';
+    case 'assigned': return 'assigned';
+    case 'unassigned': return 'unassigned';
+    case 'priority_changed': return 'changed priority of';
+    case 'due_date_changed': return 'changed due date of';
     default: return action;
   }
 }
@@ -196,6 +324,15 @@ function resolveTarget(log, taskMap, projectMap) {
   // Prefer stored metadata name/title
   if (log.metadata?.title) return log.metadata.title;
   if (log.metadata?.name) return log.metadata.name;
+  
+  // For project_member, use memberName
+  if (log.entityType === 'project_member' && log.metadata?.memberName) {
+    return log.metadata.memberName;
+  }
+
+  // Check changes object as fallback (for creation events where seed scripts store the name here)
+  if (log.changes?.name) return log.changes.name;
+  if (log.changes?.title) return log.changes.title;
 
   // Fall back to DB lookup
   const id = log.entityId?.toString();

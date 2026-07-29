@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
+  ShieldCheck,
   Users,
   UserRound,
 } from "lucide-react";
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { useApp } from "@/lib/app-context";
+import { isAdmin } from "@/lib/permissions";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 
 export function AppSidebar() {
@@ -43,6 +45,10 @@ export function AppSidebar() {
     { title: t("projects"), url: "/projects", icon: FolderKanban },
     { title: t("myTasks"), url: "/tasks", icon: CheckSquare },
     { title: t("members"), url: "/members", icon: Users },
+  ] as const;
+
+  const adminNav = [
+    { title: t("admin"), url: "/admin", icon: ShieldCheck },
   ] as const;
 
   const accountNav = [
@@ -91,6 +97,30 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {isAdmin(currentUser) && (
+          <SidebarGroup>
+            {!collapsed && <SidebarGroupLabel>{t("admin")}</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminNav.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(item.url)}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.url} className="flex items-center gap-2.5">
+                        <item.icon className="size-4 shrink-0" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         <SidebarGroup>
           {!collapsed && <SidebarGroupLabel>{t("account")}</SidebarGroupLabel>}
           <SidebarGroupContent>
@@ -137,6 +167,9 @@ export function AppSidebar() {
                       <span className="truncate text-xs text-muted-foreground">
                         {currentUser.email}
                       </span>
+                      <span className="truncate text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {currentUser.role}
+                      </span>
                     </span>
                   )}
                 </Link>
@@ -144,8 +177,8 @@ export function AppSidebar() {
             </SidebarMenuItem>
           )}
           <SidebarMenuItem>
-            <SidebarMenuButton 
-              asChild 
+            <SidebarMenuButton
+              asChild
               tooltip={t("logOut")}
               onClick={async (e) => {
                 e.preventDefault();
@@ -154,7 +187,6 @@ export function AppSidebar() {
                 } catch (error) {
                   console.error("Logout error:", error);
                 }
-                // Always redirect to login, even if logout fails
                 router.push("/login");
               }}
             >

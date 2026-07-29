@@ -96,7 +96,7 @@ export default function MembersPage() {
           </div>
           <div className="rounded-lg border bg-card p-4 shadow-soft">
             <div className="text-sm font-medium text-muted-foreground">
-              {t("roles.admin")}s
+              {t("rolesPlural.admins")}
             </div>
             <div className="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">
               {stats.admins}
@@ -104,7 +104,7 @@ export default function MembersPage() {
           </div>
           <div className="rounded-lg border bg-card p-4 shadow-soft">
             <div className="text-sm font-medium text-muted-foreground">
-              {t("roles.manager")}s
+              {t("rolesPlural.managers")}
             </div>
             <div className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">
               {stats.managers}
@@ -112,7 +112,7 @@ export default function MembersPage() {
           </div>
           <div className="rounded-lg border bg-card p-4 shadow-soft">
             <div className="text-sm font-medium text-muted-foreground">
-              {t("roles.member")}s
+              {t("rolesPlural.members")}
             </div>
             <div className="mt-1 text-2xl font-bold text-gray-600 dark:text-gray-400">
               {stats.members}

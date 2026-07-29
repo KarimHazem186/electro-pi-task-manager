@@ -188,4 +188,16 @@ describe('Authentication API', () => {
       expect(res.body.success).toBe(false);
     });
   });
+
+  describe('Rate limiting', () => {
+    it('should attach RateLimit-* headers to API responses', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'rate@test.com', password: 'WrongPass@123' });
+
+      // The auth limiter is active on /api/auth/login
+      expect(res.headers).toHaveProperty('ratelimit-limit');
+      expect(res.headers).toHaveProperty('ratelimit-remaining');
+    });
+  });
 });

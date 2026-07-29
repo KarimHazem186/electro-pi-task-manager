@@ -27,21 +27,13 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout intentionally has no <html> / <body>: the locale-aware
- * `<html lang dir>` lives in `app/[locale]/layout.tsx` so the active
- * locale (and its text direction) can be applied per-request.
+ * Root layout: This must return the html/body tags.
+ * The locale-specific attributes are handled by the [locale] layout.
  */
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div
-      className={`${inter.variable} ${cairo.variable}`}
-      suppressHydrationWarning
-    >
-      {children}
-    </div>
-  );
+  return children;
 }

@@ -2,7 +2,7 @@
 
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { localeNames, routing, usePathname, useRouter } from "@/i18n/routing";
 import {
@@ -11,7 +11,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function LanguageSwitcher() {
   const locale = useLocale();
@@ -19,6 +23,7 @@ export function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const onSelect = (next: string) => {
     startTransition(() => {
@@ -27,17 +32,21 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-xl"
-          aria-label={t("language")}
-        >
-          <Languages className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+      <Tooltip open={dropdownOpen ? false : undefined}>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={t("language")}
+              className="group grid size-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[state=open]:bg-accent data-[state=open]:text-foreground"
+            >
+              <Languages className="size-4" />
+            </button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{t("language")}</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent align="end">
         {routing.locales.map((l) => (
           <DropdownMenuItem

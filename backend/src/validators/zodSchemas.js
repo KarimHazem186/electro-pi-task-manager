@@ -123,7 +123,7 @@ export const addProjectMemberSchema = z.object({
 
 export const updateProjectMemberSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID'),
+    projectId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID'),
     memberId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid member ID'),
   }),
   body: z.object({
@@ -135,7 +135,7 @@ export const updateProjectMemberSchema = z.object({
 
 export const removeProjectMemberSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID'),
+    projectId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID'),
     memberId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid member ID'),
   }),
 });
@@ -160,7 +160,7 @@ export const createTaskSchema = z.object({
       .optional()
       .nullable(),
     status: z.enum(['todo', 'in_progress', 'done']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
+    priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
     dueDate: z
       .string()
       .datetime({ message: 'Invalid date format' })
@@ -194,7 +194,7 @@ export const updateTaskSchema = z.object({
       .optional()
       .nullable(),
     status: z.enum(['todo', 'in_progress', 'done']).optional(),
-    priority: z.enum(['low', 'medium', 'high']).optional(),
+    priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
     dueDate: z
       .string()
       .datetime({ message: 'Invalid date format' })
@@ -215,7 +215,7 @@ export const taskQuerySchema = z.object({
   query: z.object({
     projectId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid project ID').optional(),
     status: z.enum(['todo', 'in_progress', 'done', 'all']).optional(),
-    priority: z.enum(['low', 'medium', 'high', 'all']).optional(),
+    priority: z.enum(['low', 'medium', 'high', 'urgent', 'all']).optional(),
     assigneeId: z.union([
       z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid assignee ID'),
       z.literal('all')
@@ -244,6 +244,17 @@ export const inviteUserSchema = z.object({
       .email('Please provide a valid email')
       .toLowerCase()
       .trim(),
+    role: z.enum(['admin', 'manager', 'member'], {
+      required_error: 'Role is required',
+    }),
+  }),
+});
+
+export const updateUserRoleSchema = z.object({
+  params: z.object({
+    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID'),
+  }),
+  body: z.object({
     role: z.enum(['admin', 'manager', 'member'], {
       required_error: 'Role is required',
     }),

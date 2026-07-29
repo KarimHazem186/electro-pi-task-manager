@@ -152,14 +152,41 @@
     border-color: var(--color-border);
   }
 
+  /* Use Cairo font for entire app in RTL mode */
+  html[dir="rtl"] * {
+    font-family: var(--font-arabic) !important;
+    direction: rtl;
+    text-align: right;
+  }
+
   html[dir="rtl"] body {
-    font-family: var(--font-arabic);
+    font-family: var(--font-arabic) !important;
     line-height: 1.7;
+    direction: rtl;
   }
 
   html[dir="rtl"] p,
-  html[dir="rtl"] span {
+  html[dir="rtl"] span,
+  html[dir="rtl"] div,
+  html[dir="rtl"] a,
+  html[dir="rtl"] button,
+  html[dir="rtl"] input,
+  html[dir="rtl"] textarea,
+  html[dir="rtl"] label,
+  html[dir="rtl"] h1,
+  html[dir="rtl"] h2,
+  html[dir="rtl"] h3,
+  html[dir="rtl"] h4,
+  html[dir="rtl"] h5,
+  html[dir="rtl"] h6 {
+    font-family: var(--font-arabic) !important;
     line-height: 1.7;
+    direction: rtl;
+  }
+
+  /* Better handling for mixed content (Arabic + English) */
+  html[dir="rtl"] * {
+    unicode-bidi: plaintext;
   }
 
   body {
@@ -178,5 +205,40 @@
   
   [dir="rtl"] .rtl\:space-x-reverse > * + * {
     --tw-space-x-reverse: 1;
+  }
+
+  /* Additional RTL helpers */
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  [dir="rtl"] * {
+    direction: rtl;
+  }
+
+  /* Ensure icons stay in their place */
+  [dir="rtl"] svg {
+    direction: ltr;
+  }
+
+  /* Force text alignment for RTL */
+  [dir="rtl"] .text-left {
+    text-align: right;
+  }
+
+  [dir="rtl"] .text-right {
+    text-align: left;
+  }
+
+  /* RTL flex and grid adjustments */
+  [dir="rtl"] .flex-row {
+    flex-direction: row-reverse;
+  }
+
+  [dir="rtl"] .space-x-2 > * + *,
+  [dir="rtl"] .space-x-3 > * + *,
+  [dir="rtl"] .space-x-4 > * + * {
+    margin-left: 0;
+    margin-right: var(--tw-space-x-reverse);
   }
 }

@@ -22,4 +22,12 @@ export const queryKeys = {
     stats: ["dashboard", "stats"] as const,
     activity: ["dashboard", "activity"] as const,
   },
+  notifications: {
+    all: ["notifications"] as const,
+    list: (query: unknown) => ["notifications", "list", query] as const,
+    unreadCount: ["notifications", "unread-count"] as const,
+  },
+  search: {
+    global: (params: unknown) => ["search", "global", params] as const,
+  },
 };

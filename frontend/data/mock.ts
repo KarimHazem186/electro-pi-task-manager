@@ -21,7 +21,7 @@ export const mockUsers: User[] = [
   {
     id: "u1",
     name: "Amara Okafor",
-    email: "amara@northwind.io",
+    email: "amara@nlectroPi.io",
     role: "admin",
     projectsCount: 6,
     createdAt: iso(-320),
@@ -29,7 +29,7 @@ export const mockUsers: User[] = [
   {
     id: "u2",
     name: "Julian Reyes",
-    email: "julian@northwind.io",
+    email: "julian@nlectroPi.io",
     role: "manager",
     projectsCount: 4,
     createdAt: iso(-280),
@@ -37,7 +37,7 @@ export const mockUsers: User[] = [
   {
     id: "u3",
     name: "Sofia Lindqvist",
-    email: "sofia@northwind.io",
+    email: "sofia@nlectroPi.io",
     role: "member",
     projectsCount: 3,
     createdAt: iso(-190),
@@ -45,7 +45,7 @@ export const mockUsers: User[] = [
   {
     id: "u4",
     name: "Dev Malhotra",
-    email: "dev@northwind.io",
+    email: "dev@nlectroPi.io",
     role: "member",
     projectsCount: 2,
     createdAt: iso(-120),
@@ -53,7 +53,7 @@ export const mockUsers: User[] = [
   {
     id: "u5",
     name: "Hana Sato",
-    email: "hana@northwind.io",
+    email: "hana@nlectroPi.io",
     role: "member",
     projectsCount: 5,
     createdAt: iso(-95),
@@ -61,7 +61,7 @@ export const mockUsers: User[] = [
   {
     id: "u6",
     name: "Ben Carter",
-    email: "ben@northwind.io",
+    email: "ben@nlectroPi.io",
     role: "manager",
     projectsCount: 3,
     createdAt: iso(-60),

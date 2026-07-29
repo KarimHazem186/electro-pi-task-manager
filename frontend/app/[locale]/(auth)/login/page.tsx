@@ -153,7 +153,7 @@ export default function LoginPage() {
       </Form>
 
       {/* Demo accounts info */}
-      <div className="mt-6 rounded-xl border border-border/50 bg-muted/30 backdrop-blur-sm p-4">
+      {/* <div className="mt-6 rounded-xl border border-border/50 bg-muted/30 backdrop-blur-sm p-4">
         <div className="flex items-start gap-2 mb-2">
           <div className="rounded-full bg-primary/10 p-1.5">
             <svg className="h-3.5 w-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -174,7 +174,7 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </AuthLayout>
   );
 }

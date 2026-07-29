@@ -15,6 +15,19 @@ const priorityStyles: Record<TaskPriority, string> = {
 
 export function PriorityBadge({ priority }: { priority: TaskPriority }) {
   const t = useTranslations("tasks.priority");
+  
+  // Handle undefined/null priority gracefully
+  if (!priority) {
+    return (
+      <Badge
+        variant="outline"
+        className="rounded-md font-medium border-border bg-muted text-muted-foreground"
+      >
+        —
+      </Badge>
+    );
+  }
+  
   return (
     <Badge
       variant="outline"
@@ -33,6 +46,19 @@ const statusStyles: Record<TaskStatus, string> = {
 
 export function StatusBadge({ status }: { status: TaskStatus }) {
   const t = useTranslations("tasks.status");
+  
+  // Handle undefined/null status gracefully
+  if (!status) {
+    return (
+      <Badge
+        variant="outline"
+        className="rounded-md font-medium border-border bg-muted text-muted-foreground"
+      >
+        —
+      </Badge>
+    );
+  }
+  
   return (
     <Badge
       variant="outline"

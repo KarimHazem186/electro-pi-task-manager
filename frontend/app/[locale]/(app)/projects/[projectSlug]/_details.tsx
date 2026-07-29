@@ -1,7 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Pencil, UserPlus } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Pencil,
+  UserPlus,
+  MoreHorizontal,
+  Calendar,
+  CheckCircle2,
+  ListTodo,
+  Users,
+  Clock,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -23,21 +34,37 @@ import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { StatCard } from "@/components/dashboard/stat-card";
 import { KanbanBoard } from "@/components/tasks/kanban-board";
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
 import { ProjectFormDialog } from "@/components/projects/project-form-dialog";
+import { AddProjectMemberDialog } from "@/components/projects/add-project-member-dialog";
 import { ImageUpload } from "@/components/shared/image-upload";
-import { useDeleteProject, useProjectBySlug } from "@/hooks/use-projects";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  useDeleteProject,
+  useProjectBySlug,
+  useRemoveProjectMember,
+  useUpdateProjectMember,
+} from "@/hooks/use-projects";
 import { useAllTasks, useDeleteTask } from "@/hooks/use-tasks";
 import { useProjectCover } from "@/hooks/use-upload";
 import { useApp } from "@/lib/app-context";
 import { canManageProject, canCreateTask } from "@/lib/permissions";
 import { formatDate } from "@/lib/format";
 import { Link, useRouter } from "@/i18n/routing";
-import type { Task, TaskStatus } from "@/types";
+import type { ProjectMember, Task, TaskStatus } from "@/types";
 
 export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
   const t = useTranslations("projects");
+  const tMembers = useTranslations("projects.members");
   const tNav = useTranslations("nav");
   const tTasks = useTranslations("tasks");
   const tCommon = useTranslations("common");
@@ -51,11 +78,13 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
   );
   const removeProject = useDeleteProject();
   const removeTask = useDeleteTask();
+  const removeMember = useRemoveProjectMember(project?.id ?? "");
+  const updateMember = useUpdateProjectMember(project?.id ?? "");
 
   const { currentUser } = useApp();
   const canManage = canManageProject(currentUser, project);
   const canCreate = canCreateTask(currentUser, project);
-  
+
   const { uploadCover, deleteCover, isUploading, isDeleting } = useProjectCover(
     project?.id ?? ""
   );
@@ -63,9 +92,11 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [taskOpen, setTaskOpen] = useState(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<TaskStatus>("todo");
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const [removingMember, setRemovingMember] = useState<ProjectMember | null>(null);
 
   if (isLoading) {
     return (
@@ -90,9 +121,26 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
     );
   }
 
+  const taskList = tasks.data ?? [];
+  const inProgressCount = taskList.filter((task) => task.status === "in_progress").length;
+  const todoCount = taskList.filter((task) => task.status === "todo").length;
   const pct = project.taskCount
     ? Math.round((project.completedTaskCount / project.taskCount) * 100)
     : 0;
+
+  const ownerMember =
+    project.members.find((m) => m.role === "owner") ?? project.members[0];
+
+  const handleRemoveMember = async () => {
+    if (!removingMember) return;
+    try {
+      await removeMember.mutateAsync(removingMember.id);
+      toast.success(tMembers("removeSuccess", { name: removingMember.user.name }));
+      setRemovingMember(null);
+    } catch {
+      toast.error(tCommon("tryAgain"));
+    }
+  };
 
   return (
     <>
@@ -111,7 +159,17 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
       </Breadcrumb>
 
       <PageHeader
-        title={project.name}
+        title={
+          <span className="flex flex-wrap items-center gap-2">
+            <span className="truncate">{project.name}</span>
+            <Badge
+              variant={project.status === "active" ? "default" : "secondary"}
+              className="capitalize"
+            >
+              {t(`status.${project.status}`)}
+            </Badge>
+          </span>
+        }
         description={project.description}
         actions={
           <>
@@ -139,6 +197,29 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
         }
       />
 
+      <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          label={t("details.stats.totalTasks")}
+          value={project.taskCount}
+          icon={ListTodo}
+        />
+        <StatCard
+          label={t("details.stats.completed")}
+          value={project.completedTaskCount}
+          icon={CheckCircle2}
+        />
+        <StatCard
+          label={t("details.stats.inProgress")}
+          value={inProgressCount}
+          icon={Clock}
+        />
+        <StatCard
+          label={t("details.stats.members")}
+          value={project.members.length}
+          icon={Users}
+        />
+      </div>
+
       <Tabs defaultValue="overview">
         <TabsList className="mb-5">
           <TabsTrigger value="overview">
@@ -156,33 +237,99 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <Card className="rounded-xl border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-base">
-                {t("details.progress")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {t("details.tasksProgress", {
-                    completed: project.completedTaskCount,
-                    total: project.taskCount,
-                  })}
-                </span>
-                <span className="font-medium">{pct}%</span>
-              </div>
-              <Progress value={pct} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                {t("details.createdAt", { date: formatDate(project.createdAt) })}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card className="rounded-xl border-border shadow-soft lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {t("details.progress")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {t("details.tasksProgress", {
+                      completed: project.completedTaskCount,
+                      total: project.taskCount,
+                    })}
+                  </span>
+                  <span className="font-medium">{pct}%</span>
+                </div>
+                <Progress value={pct} className="h-2" />
+                <div className="grid grid-cols-3 gap-2 pt-2 text-center">
+                  <div className="rounded-lg bg-secondary/40 p-2">
+                    <p className="text-xs text-muted-foreground">
+                      {tTasks("status.todo")}
+                    </p>
+                    <p className="text-lg font-semibold">{todoCount}</p>
+                  </div>
+                  <div className="rounded-lg bg-secondary/40 p-2">
+                    <p className="text-xs text-muted-foreground">
+                      {tTasks("status.in_progress")}
+                    </p>
+                    <p className="text-lg font-semibold">{inProgressCount}</p>
+                  </div>
+                  <div className="rounded-lg bg-secondary/40 p-2">
+                    <p className="text-xs text-muted-foreground">
+                      {tTasks("status.done")}
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {project.completedTaskCount}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-xl border-border shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {t("details.about")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex items-center gap-3">
+                  {ownerMember ? (
+                    <>
+                      <UserAvatar user={ownerMember.user} />
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">
+                          {ownerMember.user.name}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {tMembers("owner")}
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {tCommon("unknown")}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Calendar className="size-4" />
+                  <span>
+                    {t("details.createdAt", { date: formatDate(project.createdAt) })}
+                  </span>
+                </div>
+                {project.updatedAt && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="size-4" />
+                    <span>
+                      {t("details.updatedAt", {
+                        date: formatDate(project.updatedAt),
+                      })}
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="board">
           <KanbanBoard
-            tasks={tasks.data ?? []}
+            tasks={taskList}
             isLoading={tasks.isLoading}
             project={project}
             canCreate={canCreate}
@@ -205,33 +352,74 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
               <CardTitle className="text-base">
                 {t("details.membersHeading")}
               </CardTitle>
-              <Button size="sm" variant="outline">
-                <UserPlus className="size-4" /> {t("details.addMember")}
-              </Button>
+              {canManage && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setAddMemberOpen(true)}
+                >
+                  <UserPlus className="size-4" /> {t("details.addMember")}
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               {project.members.length ? (
-                project.members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <UserAvatar user={member.user} />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">
-                          {member.user.name}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {member.user.email}
-                        </p>
+                project.members.map((member) => {
+                  const isOwner = member.role === "owner";
+                  const canManageMember = canManage && !isOwner;
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <UserAvatar user={member.user} />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">
+                            {member.user.name}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {member.user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Badge variant="outline" className="capitalize">
+                          {tMembers(member.role)}
+                        </Badge>
+                        {canManageMember && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="size-7"
+                                aria-label={tCommon("actionsFor", {
+                                  name: member.user.name,
+                                })}
+                              >
+                                <MoreHorizontal className="size-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem disabled>
+                                {tMembers("changeRole")}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => setRemovingMember(member)}
+                              >
+                                <Trash2 className="size-4" />
+                                {tMembers("removeFromProject")}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </div>
-                    <Badge variant="outline" className="shrink-0 capitalize">
-                      {member.role}
-                    </Badge>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <EmptyState title={t("details.noMembers")} />
               )}
@@ -269,7 +457,7 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
                 )}
               </CardContent>
             </Card>
-            
+
             <Card className="rounded-xl border-border shadow-soft">
               <CardHeader>
                 <CardTitle className="text-base">
@@ -300,6 +488,13 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
         task={editingTask}
         projectId={project.id}
         defaultStatus={defaultStatus}
+      />
+      <AddProjectMemberDialog
+        open={addMemberOpen}
+        onOpenChange={setAddMemberOpen}
+        projectId={project.id}
+        projectName={project.name}
+        existingMembers={project.members}
       />
       <ConfirmDialog
         open={deleteOpen}
@@ -333,6 +528,21 @@ export function ProjectDetails({ projectSlug }: { projectSlug: string }) {
           toast.success(tTasks("delete.title"));
           setDeletingTask(null);
         }}
+      />
+      <ConfirmDialog
+        open={Boolean(removingMember)}
+        onOpenChange={(open) => !open && setRemovingMember(null)}
+        title={tMembers("removeDialog.title")}
+        description={
+          removingMember
+            ? tMembers("removeDialog.description", { name: removingMember.user.name })
+            : ""
+        }
+        confirmLabel={tCommon("delete")}
+        cancelLabel={tCommon("cancel")}
+        destructive
+        loading={removeMember.isPending}
+        onConfirm={handleRemoveMember}
       />
     </>
   );

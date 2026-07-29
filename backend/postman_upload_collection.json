@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Task Manager - Image Upload API",
-    "description": "API endpoints for uploading images to Cloudinary",
+    "name": "Task Manager - Image Upload API (ElectroPi)",
+    "description": "API endpoints for uploading images to Cloudinary for ElectroPi Task Manager",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -216,14 +216,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"amara@electropi.io\",\n  \"password\": \"Amara@123456\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "login"]
             },
-            "description": "Login to get JWT token (automatically saves token to collection variable)"
+            "description": "Login to get JWT token with ElectroPi account (automatically saves token to collection variable)"
           },
           "response": []
         }

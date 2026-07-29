@@ -92,6 +92,28 @@ export function useProjectSocket(projectId: string | null) {
 }
 
 /**
+ * React hook for joining the per-user notification room.
+ * Pass `null` when the user is not signed in to leave any previous room.
+ */
+export function useUserSocket(userId: string | null | undefined) {
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket || !userId) return;
+
+    socket.emit('join-user', userId);
+    console.log(`📡 Joined user room: ${userId}`);
+
+    return () => {
+      socket.emit('leave-user', userId);
+      console.log(`📡 Left user room: ${userId}`);
+    };
+  }, [socket, userId]);
+
+  return socket;
+}
+
+/**
  * React hook for listening to task events
  */
 export function useTaskEvents(

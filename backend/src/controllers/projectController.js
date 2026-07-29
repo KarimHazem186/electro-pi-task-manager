@@ -4,6 +4,7 @@ import Task from '../models/Task.js';
 import AuditLog from '../models/AuditLog.js';
 import { asyncHandler } from '../middleware/error.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/uploadHelper.js';
+import { notifyProjectMemberAdded } from '../services/notificationService.js';
 
 /**
  * @route   GET /api/projects
@@ -58,21 +59,19 @@ export const getProjects = asyncHandler(async (req, res) => {
         status: 'done',
       });
 
+      // Transform members BEFORE project.toJSON() so they're still Mongoose docs
+      // and the custom toJSON() on ProjectMember runs.
+      let serializedMembers = [];
+      if (project.members) {
+        serializedMembers = project.members.map((m) =>
+          m.toJSON ? m.toJSON() : m,
+        );
+      }
+
       const projectObj = project.toJSON();
       projectObj.taskCount = taskCount;
       projectObj.completedTaskCount = completedTaskCount;
-
-      // Transform members
-      if (projectObj.members) {
-        projectObj.members = projectObj.members.map((member) => {
-          const memberObj = member.toJSON ? member.toJSON() : member;
-          if (memberObj.userId) {
-            memberObj.user = memberObj.userId;
-            delete memberObj.userId;
-          }
-          return memberObj;
-        });
-      }
+      projectObj.members = serializedMembers;
 
       return projectObj;
     })
@@ -130,21 +129,16 @@ export const getProjectById = asyncHandler(async (req, res) => {
     status: 'done',
   });
 
+  // Transform members BEFORE project.toJSON() so they remain Mongoose docs
+  let serializedMembers = [];
+  if (project.members) {
+    serializedMembers = project.members.map((m) => (m.toJSON ? m.toJSON() : m));
+  }
+
   const projectObj = project.toJSON();
   projectObj.taskCount = taskCount;
   projectObj.completedTaskCount = completedTaskCount;
-
-  // Transform members
-  if (projectObj.members) {
-    projectObj.members = projectObj.members.map((member) => {
-      const memberObj = member.toJSON ? member.toJSON() : member;
-      if (memberObj.userId) {
-        memberObj.user = memberObj.userId;
-        delete memberObj.userId;
-      }
-      return memberObj;
-    });
-  }
+  projectObj.members = serializedMembers;
 
   res.json({
     success: true,
@@ -194,21 +188,16 @@ export const getProjectBySlug = asyncHandler(async (req, res) => {
     status: 'done',
   });
 
+  // Transform members BEFORE project.toJSON() so they remain Mongoose docs
+  let serializedMembers = [];
+  if (project.members) {
+    serializedMembers = project.members.map((m) => (m.toJSON ? m.toJSON() : m));
+  }
+
   const projectObj = project.toJSON();
   projectObj.taskCount = taskCount;
   projectObj.completedTaskCount = completedTaskCount;
-
-  // Transform members
-  if (projectObj.members) {
-    projectObj.members = projectObj.members.map((member) => {
-      const memberObj = member.toJSON ? member.toJSON() : member;
-      if (memberObj.userId) {
-        memberObj.user = memberObj.userId;
-        delete memberObj.userId;
-      }
-      return memberObj;
-    });
-  }
+  projectObj.members = serializedMembers;
 
   res.json({
     success: true,
@@ -315,21 +304,18 @@ export const updateProject = asyncHandler(async (req, res) => {
     status: 'done',
   });
 
+  // Transform members BEFORE updatedProject.toJSON() so they remain Mongoose docs
+  let serializedMembers = [];
+  if (updatedProject.members) {
+    serializedMembers = updatedProject.members.map((m) =>
+      m.toJSON ? m.toJSON() : m,
+    );
+  }
+
   const projectObj = updatedProject.toJSON();
   projectObj.taskCount = taskCount;
   projectObj.completedTaskCount = completedTaskCount;
-
-  // Transform members
-  if (projectObj.members) {
-    projectObj.members = projectObj.members.map((member) => {
-      const memberObj = member.toJSON ? member.toJSON() : member;
-      if (memberObj.userId) {
-        memberObj.user = memberObj.userId;
-        delete memberObj.userId;
-      }
-      return memberObj;
-    });
-  }
+  projectObj.members = serializedMembers;
 
   res.json({
     success: true,
@@ -395,12 +381,8 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
     'name email avatarUrl role'
   );
 
-  const transformedMembers = members.map((member) => {
-    const memberObj = member.toJSON();
-    memberObj.user = memberObj.userId;
-    delete memberObj.userId;
-    return memberObj;
-  });
+  // toJSON on ProjectMember already produces { id, projectId, user, userId, role, joinedAt }
+  const transformedMembers = members.map((member) => member.toJSON());
 
   res.json({
     success: true,
@@ -415,6 +397,14 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
  */
 export const addProjectMember = asyncHandler(async (req, res) => {
   const { userId, role = 'editor' } = req.body;
+
+  const project = await Project.findById(req.params.projectId);
+  if (!project) {
+    return res.status(404).json({
+      success: false,
+      message: 'Project not found',
+    });
+  }
 
   // Check if already a member
   const existingMember = await ProjectMember.findOne({
@@ -449,12 +439,77 @@ export const addProjectMember = asyncHandler(async (req, res) => {
   );
 
   const memberObj = populatedMember.toJSON();
-  memberObj.user = memberObj.userId;
-  delete memberObj.userId;
+
+  // Fire-and-forget notification + email to the new member
+  notifyProjectMemberAdded({
+    project,
+    member: populatedMember,
+    actor: req.user,
+  }).catch((err) => console.error('notifyProjectMemberAdded error:', err.message));
 
   res.status(201).json({
     success: true,
     data: memberObj,
+  });
+});
+
+/**
+ * @route   PATCH /api/projects/:projectId/members/:memberId
+ * @desc    Update a project member's role
+ * @access  Private (Project owner or Admin)
+ */
+export const updateProjectMember = asyncHandler(async (req, res) => {
+  const { role } = req.body;
+  const { projectId, memberId } = req.params;
+
+  const member = await ProjectMember.findOne({ _id: memberId, projectId });
+
+  if (!member) {
+    return res.status(404).json({
+      success: false,
+      message: 'Member not found',
+    });
+  }
+
+  // Cannot demote the project owner via this endpoint
+  if (member.role === 'owner') {
+    return res.status(400).json({
+      success: false,
+      message: 'Cannot change the role of the project owner',
+    });
+  }
+
+  // Cannot promote anyone else to owner via this endpoint (use a separate
+  // ownership transfer flow). For now, only owner→owner promotion is allowed
+  // for admins on the current owner record.
+  if (role === 'owner' && req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Only admins can assign the owner role',
+    });
+  }
+
+  const previousRole = member.role;
+  member.role = role;
+  await member.save();
+
+  await AuditLog.create({
+    userId: req.user._id,
+    action: 'updated',
+    entityType: 'project_member',
+    entityId: member._id,
+    changes: { role: { from: previousRole, to: role } },
+    metadata: { projectId, memberId: member.userId },
+  });
+
+  const populated = await ProjectMember.findById(member._id).populate(
+    'userId',
+    'name email avatarUrl role'
+  );
+
+  res.json({
+    success: true,
+    data: populated.toJSON(),
   });
 });
 

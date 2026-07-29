@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Task Manager API",
-    "description": "Complete API collection for Task Manager application",
+    "name": "Task Manager API - ElectroPi Edition",
+    "description": "Complete API collection for ElectroPi Task Manager application with IoT project examples",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -99,6 +99,41 @@
           }
         },
         {
+          "name": "Login (ElectroPi - Amara)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"amara@electropi.io\",\n  \"password\": \"Amara@123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with ElectroPi Labs primary account (Amara Okafar)"
+          }
+        },
+        {
           "name": "Get Current User",
           "request": {
             "method": "GET",
@@ -193,7 +228,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"New Project\",\n  \"description\": \"Project description here\"\n}",
+              "raw": "{\n  \"name\": \"New IoT Project\",\n  \"description\": \"Smart home automation system with sensor integration\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -204,7 +239,8 @@
               "raw": "{{base_url}}/projects",
               "host": ["{{base_url}}"],
               "path": ["projects"]
-            }
+            },
+            "description": "Create a new project"
           }
         },
         {
@@ -250,7 +286,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Project Name\",\n  \"description\": \"Updated description\"\n}",
+              "raw": "{\n  \"name\": \"ElectroPi Smart Home Platform\",\n  \"description\": \"Advanced IoT platform for smart home automation\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -267,7 +303,8 @@
                   "value": ""
                 }
               ]
-            }
+            },
+            "description": "Update an existing project"
           }
         },
         {
@@ -354,6 +391,26 @@
               ]
             }
           }
+        },
+        {
+          "name": "Update Project Member Role",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"viewer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/projects/:projectId/members/:memberId",
+              "host": ["{{base_url}}"],
+              "path": ["projects", ":projectId", "members", ":memberId"],
+              "variable": [
+                { "key": "projectId", "value": "" },
+                { "key": "memberId", "value": "" }
+              ]
+            }
+          }
         }
       ]
     },
@@ -402,7 +459,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"New Task\",\n  \"description\": \"Task description here\",\n  \"status\": \"todo\",\n  \"priority\": \"medium\",\n  \"dueDate\": \"2026-08-01T00:00:00.000Z\",\n  \"assigneeId\": null,\n  \"projectId\": \"PROJECT_ID_HERE\"\n}",
+              "raw": "{\n  \"title\": \"Configure IoT device sensors\",\n  \"description\": \"Setup temperature and humidity sensors for the device fleet\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"dueDate\": \"2026-08-01T00:00:00.000Z\",\n  \"assigneeId\": null,\n  \"projectId\": \"PROJECT_ID_HERE\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -413,7 +470,8 @@
               "raw": "{{base_url}}/tasks",
               "host": ["{{base_url}}"],
               "path": ["tasks"]
-            }
+            },
+            "description": "Create a new task"
           }
         },
         {

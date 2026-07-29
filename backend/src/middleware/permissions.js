@@ -2,8 +2,47 @@ import ProjectMember from '../models/ProjectMember.js';
 import Task from '../models/Task.js';
 import Project from '../models/Project.js';
 
+const PROJECT_ROLE_ORDER = {
+  viewer: 1,
+  editor: 2,
+  owner: 3,
+};
+
+/**
+ * Resolve the effective project role for a user. Returns 'owner' for admins
+ * and project owners, the membership role for members, and `null` for users
+ * with no access.
+ */
+export const getEffectiveProjectRole = async (projectId, user) => {
+  if (!projectId || !user) return null;
+
+  if (user.role === 'admin') {
+    return 'owner';
+  }
+
+  const project = await Project.findById(projectId).select('ownerId');
+  if (!project) return null;
+
+  if (project.ownerId.toString() === user._id.toString()) {
+    return 'owner';
+  }
+
+  const membership = await ProjectMember.findOne({
+    projectId,
+    userId: user._id,
+  }).select('role');
+
+  return membership?.role ?? null;
+};
+
+export const hasProjectRoleAtLeast = (currentRole, requiredRole) => {
+  if (!currentRole || !requiredRole) return false;
+  return PROJECT_ROLE_ORDER[currentRole] >= PROJECT_ROLE_ORDER[requiredRole];
+};
+
 /**
  * Check if user has access to a project
+ * Optional requiredRole: viewer | editor | owner
  */
 export const checkProjectAccess = (requiredRole = null) => {
   return async (req, res, next) => {
@@ -17,9 +56,8 @@ export const checkProjectAccess = (requiredRole = null) => {
         });
       }
 
-      // Check if user is project owner
       const project = await Project.findById(projectId);
-      
+
       if (!project) {
         return res.status(404).json({
           success: false,
@@ -27,45 +65,31 @@ export const checkProjectAccess = (requiredRole = null) => {
         });
       }
 
-      // Admin can access all projects
-      if (req.user.role === 'admin') {
-        req.project = project;
-        return next();
-      }
+      const role = await getEffectiveProjectRole(projectId, req.user);
 
-      // Owner has full access
-      if (project.ownerId.toString() === req.user._id.toString()) {
-        req.project = project;
-        return next();
-      }
-
-      // Check project membership
-      const membership = await ProjectMember.findOne({
-        projectId,
-        userId: req.user._id,
-      });
-
-      if (!membership) {
+      if (!role) {
         return res.status(403).json({
           success: false,
           message: 'You do not have access to this project',
         });
       }
 
-      // Check role requirements
-      if (requiredRole) {
-        const roleHierarchy = { viewer: 1, editor: 2, owner: 3 };
-        
-        if (roleHierarchy[membership.role] < roleHierarchy[requiredRole]) {
-          return res.status(403).json({
-            success: false,
-            message: `This action requires '${requiredRole}' role`,
-          });
-        }
+      if (requiredRole && !hasProjectRoleAtLeast(role, requiredRole)) {
+        return res.status(403).json({
+          success: false,
+          message: `This action requires '${requiredRole}' role on the project`,
+        });
       }
 
       req.project = project;
-      req.membership = membership;
+      req.projectRole = role;
+      if (role !== 'owner' || project.ownerId.toString() !== req.user._id.toString()) {
+        const membership = await ProjectMember.findOne({
+          projectId,
+          userId: req.user._id,
+        });
+        if (membership) req.membership = membership;
+      }
       next();
     } catch (error) {
       next(error);
@@ -74,63 +98,53 @@ export const checkProjectAccess = (requiredRole = null) => {
 };
 
 /**
- * Check if user can modify a task
+ * Check if user has access to a task through its project.
+ * Optional requiredRole: viewer | editor | owner
  */
-export const checkTaskAccess = async (req, res, next) => {
-  try {
-    const taskId = req.params.id;
+export const checkTaskAccess = (requiredRole = null) => {
+  return async (req, res, next) => {
+    try {
+      const taskId = req.params.id || req.params.taskId;
 
-    const task = await Task.findById(taskId);
+      if (!taskId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Task ID is required',
+        });
+      }
 
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: 'Task not found',
-      });
-    }
+      const task = await Task.findById(taskId);
 
-    // Check project access
-    const project = await Project.findById(task.projectId);
-    
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found',
-      });
-    }
+      if (!task) {
+        return res.status(404).json({
+          success: false,
+          message: 'Task not found',
+        });
+      }
 
-    // Admin can access all tasks
-    if (req.user.role === 'admin') {
+      const role = await getEffectiveProjectRole(task.projectId, req.user);
+
+      if (!role) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have access to this task',
+        });
+      }
+
+      if (requiredRole && !hasProjectRoleAtLeast(role, requiredRole)) {
+        return res.status(403).json({
+          success: false,
+          message: `This action requires '${requiredRole}' role on the task's project`,
+        });
+      }
+
       req.task = task;
-      req.project = project;
-      return next();
+      req.projectRole = role;
+      const project = await Project.findById(task.projectId);
+      if (project) req.project = project;
+      next();
+    } catch (error) {
+      next(error);
     }
-
-    // Project owner can modify all tasks
-    if (project.ownerId.toString() === req.user._id.toString()) {
-      req.task = task;
-      req.project = project;
-      return next();
-    }
-
-    // Check if user is a project member with editor or owner role
-    const membership = await ProjectMember.findOne({
-      projectId: task.projectId,
-      userId: req.user._id,
-    });
-
-    if (!membership || membership.role === 'viewer') {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to modify this task',
-      });
-    }
-
-    req.task = task;
-    req.project = project;
-    req.membership = membership;
-    next();
-  } catch (error) {
-    next(error);
-  }
+  };
 };

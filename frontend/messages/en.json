@@ -35,6 +35,47 @@
     "actionsFor": "Actions for {name}",
     "toggleSidebar": "Toggle sidebar"
   },
+  "activity": {
+    "created": "created",
+    "updated": "updated",
+    "deleted": "deleted",
+    "status_changed": "changed status of",
+    "assigned": "assigned",
+    "unassigned": "unassigned",
+    "priority_changed": "changed priority of",
+    "due_date_changed": "changed due date of",
+    "task": "task",
+    "project": "project",
+    "project_member": "project member",
+    "entityTypes": {
+      "task": "task",
+      "project": "project",
+      "project_member": "project member"
+    },
+    "actions": {
+      "created": "created",
+      "updated": "updated",
+      "deleted": "deleted",
+      "status_changed": "changed status of",
+      "assigned": "assigned",
+      "unassigned": "unassigned",
+      "priority_changed": "changed priority of",
+      "due_date_changed": "changed due date of"
+    },
+    "priorityLabel": "Priority:",
+    "dueDateLabel": "Due date:",
+    "noDate": "No date",
+    "setTo": "Set to",
+    "timeAgo": {
+      "justNow": "just now",
+      "minutesAgo": "{count} minutes ago",
+      "hoursAgo": "{count} hours ago",
+      "daysAgo": "{count} days ago",
+      "weeksAgo": "{count} weeks ago",
+      "monthsAgo": "{count} months ago",
+      "yearsAgo": "{count} years ago"
+    }
+  },
   "combobox": {
     "selectPlaceholder": "Select…",
     "searchPlaceholder": "Search…",
@@ -56,6 +97,7 @@
   "nav": {
     "workspace": "Workspace",
     "account": "Account",
+    "admin": "Admin",
     "dashboard": "Dashboard",
     "projects": "Projects",
     "myTasks": "My Tasks",
@@ -64,9 +106,50 @@
     "settings": "Settings",
     "logOut": "Log out"
   },
+  "admin": {
+    "description": "Workspace administration and settings",
+    "cards": {
+      "users": {
+        "title": "User Management",
+        "description": "Manage workspace users and roles"
+      },
+      "projects": {
+        "title": "Project Oversight",
+        "description": "View and manage all workspace projects"
+      },
+      "activity": {
+        "title": "Activity Monitor",
+        "description": "Track workspace-wide activity"
+      }
+    },
+    "coming_soon": {
+      "title": "Admin Panel Coming Soon",
+      "description": "Advanced admin features are under development:",
+      "features": {
+        "user_management": "User invitation and management",
+        "role_management": "Workspace role administration",
+        "audit_logs": "Complete audit log viewer",
+        "workspace_settings": "Workspace configuration and branding"
+      }
+    }
+  },
   "topbar": {
     "search": "Search projects and tasks…",
-    "notifications": "Notifications"
+    "clear": "Clear search",
+    "searchHint": "Type at least 2 characters to search projects and tasks.",
+    "searching": "Searching…",
+    "resultsCount": "{count, plural, =0 {No results} one {# result} other {# results}}",
+    "emptyResults": "No matches for \"{query}\".",
+    "searchError": "We couldn't complete the search. Please try again.",
+    "sectionProjects": "Projects",
+    "sectionTasks": "Tasks",
+    "navigate": "navigate",
+    "open": "open",
+    "close": "close",
+    "pressEnterForAll": "Press Enter to see all results",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "logoutSuccess": "Signed out successfully"
   },
   "auth": {
     "login": {
@@ -129,6 +212,7 @@
     "nothingDue": "Nothing due",
     "allCaughtUp": "You're all caught up.",
     "activity": "Activity",
+    "noActivity": "No recent activity",
     "assignedHint": "Tasks assigned to you will appear here."
   },
   "projects": {
@@ -138,6 +222,10 @@
     "searchPlaceholder": "Search projects…",
     "noProjects": "No projects yet",
     "createFirst": "Create your first project",
+    "status": {
+      "active": "Active",
+      "archived": "Archived"
+    },
     "card": {
       "tasksProgress": "{completed}/{total} tasks"
     },
@@ -160,16 +248,45 @@
       "progress": "Progress",
       "tasksProgress": "{completed} of {total} tasks done",
       "createdAt": "Created {date}",
+      "updatedAt": "Updated {date}",
+      "about": "About this project",
       "membersHeading": "Members",
       "noMembers": "No members yet",
       "dangerZone": "Danger zone",
       "dangerZoneDesc": "Deleting a project permanently removes its tasks and history.",
-      "deleteProject": "Delete project"
+      "deleteProject": "Delete project",
+      "stats": {
+        "totalTasks": "Total tasks",
+        "completed": "Completed",
+        "inProgress": "In progress",
+        "members": "Members"
+      }
     },
-    "memberRoles": {
+    "members": {
       "owner": "Owner",
       "editor": "Editor",
-      "viewer": "Viewer"
+      "viewer": "Viewer",
+      "addTitle": "Add member to project",
+      "addDescription": "Pick a workspace member to add to \"{name}\".",
+      "selectMember": "Member",
+      "selectMemberPlaceholder": "Search by name or email…",
+      "projectRole": "Project role",
+      "submit": "Add to project",
+      "addSuccess": "Member added to \"{name}\"",
+      "allAlreadyAdded": "All workspace members are already on this project.",
+      "changeRole": "Change role",
+      "removeFromProject": "Remove from project",
+      "removeSuccess": "Removed {name} from the project",
+      "removeDialog": {
+        "title": "Remove member?",
+        "description": "{name} will lose access to this project and its tasks."
+      },
+      "roleUpdateSuccess": "{name} is now a {role}",
+      "roleUpdateError": "Could not change role. Please try again.",
+      "roleDescriptions": {
+        "editor": "Can create and edit tasks in this project.",
+        "viewer": "Can view project tasks but cannot edit them."
+      }
     },
     "form": {
       "create": "New project",
@@ -292,6 +409,11 @@
       "manager": "Manager",
       "member": "Member"
     },
+    "rolesPlural": {
+      "admins": "Admins",
+      "managers": "Managers",
+      "members": "Members"
+    },
     "roleDescriptions": {
       "admin": "Full access to all workspace settings",
       "manager": "Manage projects and team members",
@@ -369,6 +491,13 @@
       "invalidCredentials": "Invalid email or password.",
       "weakPassword": "Password is too weak.",
       "unknownError": "An unexpected error occurred."
+    },
+    "permissions": {
+      "insufficientRole": "You don't have permission to perform this action.",
+      "viewerCannotEdit": "Viewers can only view project content. Contact the project owner to upgrade your role.",
+      "editorCannotManage": "Only project owners can manage project settings and members.",
+      "adminOnly": "This action requires administrator privileges.",
+      "notProjectMember": "You don't have access to this project."
     }
   },
   "empty": {
@@ -432,6 +561,26 @@
     }
   },
   "notifications": {
+    "title": "Notifications",
+    "markAll": "Mark all read",
+    "markAsRead": "Mark as read",
+    "unread": "Unread",
+    "unreadSummary": "{count, plural, =0 {All caught up} one {# unread notification} other {# unread notifications}}",
+    "allCaughtUp": "You're all caught up.",
+    "empty": "No notifications yet",
+    "emptyDesc": "We'll let you know when something important happens.",
+    "lastMessages": "Last {count} messages",
+    "manage": "Manage notifications",
+    "type": {
+      "task_assigned": "Task assigned",
+      "task_updated": "Task updated",
+      "task_completed": "Task completed",
+      "task_status_changed": "Status changed",
+      "project_member_added": "Project invite",
+      "project_invite": "Project invite",
+      "mention": "Mention",
+      "system": "System"
+    },
     "taskCreated": "New task: {title}",
     "taskCreatedDesc": "A new task has been created",
     "taskUpdated": "Task updated: {title}",

@@ -129,6 +129,18 @@ Interactive API documentation is available at:
 - **Development**: http://localhost:5000/api-docs
 - **Production**: https://your-backend-url.com/api-docs
 
+**📊 Complete Coverage:** All **49 endpoints** are fully documented with:
+- ✅ Request/Response schemas
+- ✅ RBAC requirements
+- ✅ Validation rules
+- ✅ Error responses
+- ✅ Interactive testing
+
+**📖 Documentation Files:**
+- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - Complete API reference
+- [RBAC_GUIDE.md](../RBAC_GUIDE.md) - Role-based access control guide
+- [SWAGGER_COMPLETE.md](../SWAGGER_COMPLETE.md) - Swagger implementation details
+
 ### Quick API Overview
 
 #### Authentication Endpoints
@@ -279,6 +291,40 @@ The API uses a secure dual-token authentication system:
 - **Access Token**: Short-lived (15 minutes) - Used for API requests
 - **Refresh Token**: Long-lived (7 days) - Used to get new access tokens
 
+### Role-Based Access Control (RBAC)
+
+The application implements a comprehensive two-tier RBAC system:
+
+**Workspace Roles** (Global):
+- **Admin**: Full workspace access, user management, sees all projects
+- **Manager**: Can create projects, manage owned projects
+- **Member**: Can create projects, manage owned projects
+
+**Project Roles** (Scoped):
+- **Owner**: Full project control (edit, delete, manage members)
+- **Editor**: Can create/edit/delete tasks, view project
+- **Viewer**: Read-only access to project and tasks
+
+**Quick Examples:**
+```javascript
+// A viewer cannot create tasks
+POST /api/tasks (as viewer) → 403 Forbidden
+
+// An editor can create and modify tasks
+POST /api/tasks (as editor) → 201 Created
+PATCH /api/tasks/:id (as editor) → 200 OK
+
+// Only owners can manage project members
+POST /api/projects/:id/members (as editor) → 403 Forbidden
+POST /api/projects/:id/members (as owner) → 201 Created
+
+// Admins have owner privileges on all projects
+DELETE /api/projects/:id (as admin) → 200 OK
+```
+
+**📚 Complete RBAC Documentation:**  
+See [RBAC_GUIDE.md](../RBAC_GUIDE.md) for detailed role matrix, implementation details, testing guide, and troubleshooting.
+
 ### Token Storage Options
 
 #### Option 1: HTTP-Only Cookies (Recommended for Web)
@@ -334,6 +380,8 @@ POST /api/auth/refresh
 - **Admin**: Full access to all resources
 - **Manager**: Can manage their own projects and be assigned to others
 - **Member**: Can be assigned to projects with specific roles
+
+For detailed RBAC implementation and role matrix, see [RBAC_GUIDE.md](../RBAC_GUIDE.md).
 
 ### Project Member Roles
 - **Owner**: Full control over project and members

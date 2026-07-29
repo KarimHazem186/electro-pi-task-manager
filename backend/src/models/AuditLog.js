@@ -10,7 +10,7 @@ const auditLogSchema = new mongoose.Schema(
     action: {
       type: String,
       required: true,
-      enum: ['created', 'updated', 'deleted', 'status_changed'],
+      enum: ['created', 'updated', 'deleted', 'status_changed', 'assigned', 'unassigned', 'priority_changed', 'due_date_changed'],
     },
     entityType: {
       type: String,

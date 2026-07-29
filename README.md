@@ -29,7 +29,11 @@
 **Team Collaboration**
 - Real-time updates: See changes instantly without refreshing
 - Role-based permissions: Control who can create, edit, or delete
-- Activity feed: Track all project and task changes
+- **Enhanced Activity Feed**: Track all project and task changes with detailed, visual activity logs
+  - 🎨 Action-specific icons and color coding
+  - 📊 Detailed change tracking (status, priority, assignments)
+  - 🔗 Direct links to related tasks and projects
+  - ⚡ Real-time updates with visual badges
 - User profiles with avatar support
 
 **Security & Compliance**
@@ -192,7 +196,7 @@ After running `npm run seed`, you'll have these pre-configured accounts:
 | **Member** | john@taskmanager.com | Member@123456 | View assigned tasks, update own tasks |
 
 **Sample Data Included:**
-- 🏢 3 Projects (Northwind, Customer App, Warehouse System)
+- 🏢 3 Projects (ElectroPi, Customer App, Warehouse System)
 - ✅ 12 Tasks with various statuses and priorities
 - 👥 5 Team members
 - 📊 Activity logs and project assignments
@@ -771,12 +775,67 @@ This application implements industry-standard security practices:
 
 ---
 
+## 📊 Enhanced Activity Feed
+
+The application features a comprehensive, visually-rich activity feed that tracks all actions in real-time:
+
+### 🎨 Visual Features
+- **Action-Specific Icons**: Each activity type has a unique icon (✨ created, 🔄 status changed, ⚡ priority changed, etc.)
+- **Color-Coded Actions**: Green for creation, red for deletion, blue for status changes, orange for priority changes
+- **Status & Priority Badges**: Visual badges showing before/after states for changes
+- **Entity Type Indicators**: Clear icons for tasks (✓), projects (📁), and team members (👥)
+
+### 📋 Activity Types Tracked
+- Task creation, updates, and deletion
+- Status changes with visual before/after badges
+- Priority changes with color-coded indicators
+- Task assignments and unassignments
+- Due date modifications
+- Project creation and updates
+- Team member additions
+
+### 💡 Features
+- **Direct Navigation**: Click any activity to jump to the related task or project
+- **Detailed Change Tracking**: See exactly what changed (e.g., "moved from To Do → In Progress")
+- **Natural Language Messages**: Human-readable descriptions of all activities
+- **Responsive Design**: Looks great on all devices with smooth hover effects
+- **Real-Time Updates**: Activity feed updates automatically as changes occur
+- **Dark Mode Support**: Fully compatible with light and dark themes
+
+### 📚 Activity Feed Documentation
+- 📖 **Full Documentation**: `ACTIVITY_FEED_ENHANCEMENTS.md`
+- 🧪 **Testing Guide**: `ACTIVITY_FEED_TESTING.md`
+- 🔄 **Migration Guide**: `backend/ACTIVITY_MIGRATION.md`
+- 📚 **Code Examples**: `ACTIVITY_EXAMPLES.md`
+- ⚡ **Quick Reference**: `ACTIVITY_QUICK_REFERENCE.md`
+- 📝 **Summary**: `ACTIVITY_FEED_SUMMARY.md`
+
+### 🎯 Example Activities
+
+```
+👤 Amara Okafar                         🔄  2 min ago
+   moved "Implement authentication"
+   [To Do] → [In Progress]
+   ✓ task
+
+👤 Sarah Williams                       ⚡  5 min ago
+   changed priority of "Fix critical bug"
+   Priority: [Low] → [High]
+   ✓ task
+
+👤 Admin User                           ✨  1 hour ago
+   created project "Mobile App Redesign"
+   📁 project
+```
+
+---
+
 ## 🎬 Application Screenshots
 
 ### Dashboard View
 ![Dashboard](docs/screenshots/dashboard.png)
 - Real-time statistics
-- Recent activity feed
+- Enhanced activity feed with visual indicators
 - Quick actions
 
 ### Project Management

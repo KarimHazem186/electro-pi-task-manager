@@ -7,6 +7,7 @@ import Project from '../models/Project.js';
 import ProjectMember from '../models/ProjectMember.js';
 import Task from '../models/Task.js';
 import AuditLog from '../models/AuditLog.js';
+import Notification from '../models/Notification.js';
 
 // Helper function to format date for better logging
 const formatDate = (date) => {
@@ -28,15 +29,16 @@ const seedData = async () => {
     await ProjectMember.deleteMany({});
     await Task.deleteMany({});
     await AuditLog.deleteMany({});
+    await Notification.deleteMany({});
     console.log('✅ Cleared existing data');
 
     // ==================== CREATE USERS ====================
     console.log('👥 Creating users...');
     
-    // Primary user (Northwind user)
+    // Primary user (ElectroPi user)
     const amara = await User.create({
       name: 'Amara Okafar',
-      email: 'amara@northwind.io',
+      email: 'amara@electropi.io',
       password: 'Amara@123456',
       role: 'admin',
       avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amara',
@@ -130,29 +132,29 @@ const seedData = async () => {
     
     // Projects owned by Amara
     const project1 = await Project.create({
-      name: 'Northwind Enterprise Portal',
-      description: 'Modern enterprise portal for Northwind Traders with real-time inventory tracking, automated order processing, and advanced analytics dashboard',
+      name: 'ElectroPi Enterprise Platform',
+      description: 'Modern enterprise platform for ElectroPi Labs with real-time IoT device tracking, automated workflow processing, and advanced analytics dashboard',
       status: 'active',
       ownerId: amara._id,
     });
 
     const project2 = await Project.create({
       name: 'Customer Mobile App',
-      description: 'Native mobile application for iOS and Android enabling customers to browse products, place orders, track shipments, and manage their accounts on the go',
+      description: 'Native mobile application for iOS and Android enabling customers to monitor IoT devices, configure settings, view analytics, and manage their ElectroPi ecosystem on the go',
       status: 'active',
       ownerId: amara._id,
     });
 
     const project3 = await Project.create({
-      name: 'Warehouse Management System',
-      description: 'Comprehensive WMS with barcode scanning, inventory optimization, automated restocking alerts, and real-time shipment tracking',
+      name: 'IoT Device Management System',
+      description: 'Comprehensive device management system with remote configuration, firmware updates, automated health monitoring, and real-time diagnostics',
       status: 'active',
       ownerId: amara._id,
     });
 
     const project4 = await Project.create({
-      name: 'Supplier Integration Platform',
-      description: 'B2B platform connecting Northwind with global suppliers, featuring automated procurement, EDI integration, and supply chain visibility',
+      name: 'Hardware Integration Platform',
+      description: 'B2B platform connecting ElectroPi with global hardware suppliers, featuring automated procurement, EDI integration, and supply chain visibility',
       status: 'active',
       ownerId: manager1._id,
     });
@@ -185,7 +187,7 @@ const seedData = async () => {
     console.log('👨‍💼 Creating project members...');
     
     const projectMembers = await ProjectMember.create([
-      // Project 1: Northwind Enterprise Portal - 6 members (Amara's)
+      // Project 1: ElectroPi Enterprise Platform - 6 members (Amara's)
       { projectId: project1._id, userId: amara._id, role: 'owner' },
       { projectId: project1._id, userId: manager1._id, role: 'editor' },
       { projectId: project1._id, userId: member1._id, role: 'editor' },
@@ -200,13 +202,13 @@ const seedData = async () => {
       { projectId: project2._id, userId: member6._id, role: 'editor' },
       { projectId: project2._id, userId: member7._id, role: 'viewer' },
       
-      // Project 3: Warehouse Management System - 4 members (Amara's)
+      // Project 3: IoT Device Management System - 4 members (Amara's)
       { projectId: project3._id, userId: amara._id, role: 'owner' },
       { projectId: project3._id, userId: member1._id, role: 'editor' },
       { projectId: project3._id, userId: member4._id, role: 'editor' },
       { projectId: project3._id, userId: member5._id, role: 'viewer' },
       
-      // Project 4: Supplier Integration Platform - 7 members
+      // Project 4: Hardware Integration Platform - 7 members
       { projectId: project4._id, userId: manager1._id, role: 'owner' },
       { projectId: project4._id, userId: amara._id, role: 'editor' },
       { projectId: project4._id, userId: member1._id, role: 'editor' },
@@ -252,11 +254,11 @@ const seedData = async () => {
     lastWeek.setDate(lastWeek.getDate() - 7);
 
     const tasks = await Task.create([
-      // Project 1 tasks (Northwind Enterprise Portal) - Amara's project
+      // Project 1 tasks (ElectroPi Enterprise Platform) - Amara's project
       {
         projectId: project1._id,
-        title: 'Review inventory dashboard wireframes',
-        description: 'Review and approve the new inventory tracking dashboard designs before development begins',
+        title: 'Review IoT dashboard wireframes',
+        description: 'Review and approve the new IoT device tracking dashboard designs before development begins',
         status: 'in_progress',
         priority: 'urgent',
         dueDate: tomorrow,
@@ -265,8 +267,8 @@ const seedData = async () => {
       },
       {
         projectId: project1._id,
-        title: 'Implement real-time order tracking',
-        description: 'Build WebSocket integration for live order status updates on customer portal',
+        title: 'Implement real-time device monitoring',
+        description: 'Build WebSocket integration for live IoT device status updates on customer portal',
         status: 'in_progress',
         priority: 'high',
         dueDate: tomorrow,
@@ -285,8 +287,8 @@ const seedData = async () => {
       },
       {
         projectId: project1._id,
-        title: 'Design product catalog page',
-        description: 'Create responsive product catalog with advanced filtering and search capabilities',
+        title: 'Design device catalog page',
+        description: 'Create responsive IoT device catalog with advanced filtering and search capabilities',
         status: 'todo',
         priority: 'high',
         dueDate: nextWeek,
@@ -296,7 +298,7 @@ const seedData = async () => {
       {
         projectId: project1._id,
         title: 'Optimize database queries',
-        description: 'Improve performance of inventory queries for faster page loads',
+        description: 'Improve performance of device data queries for faster page loads',
         status: 'todo',
         priority: 'medium',
         dueDate: twoWeeks,
@@ -317,8 +319,8 @@ const seedData = async () => {
       },
       {
         projectId: project2._id,
-        title: 'Implement barcode scanner',
-        description: 'Add product barcode scanning feature for quick product lookup',
+        title: 'Implement QR code scanner',
+        description: 'Add device QR code scanning feature for quick device registration',
         status: 'in_progress',
         priority: 'high',
         dueDate: nextWeek,
@@ -328,7 +330,7 @@ const seedData = async () => {
       {
         projectId: project2._id,
         title: 'Build push notification system',
-        description: 'Setup Firebase Cloud Messaging for order status notifications',
+        description: 'Setup Firebase Cloud Messaging for device alerts and status notifications',
         status: 'done',
         priority: 'high',
         dueDate: lastWeek,
@@ -347,8 +349,8 @@ const seedData = async () => {
       },
       {
         projectId: project2._id,
-        title: 'Create order history screen',
-        description: 'Display customer order history with filtering and search',
+        title: 'Create device history screen',
+        description: 'Display device activity history with filtering and search',
         status: 'todo',
         priority: 'medium',
         dueDate: twoWeeks,
@@ -356,11 +358,11 @@ const seedData = async () => {
         creatorId: amara._id,
       },
 
-      // Project 3 tasks (Warehouse Management System) - Amara's project
+      // Project 3 tasks (IoT Device Management System) - Amara's project
       {
         projectId: project3._id,
-        title: 'Test barcode scanner integration',
-        description: 'Verify barcode scanner hardware works with new WMS system',
+        title: 'Test device firmware update',
+        description: 'Verify OTA firmware update works with new device management system',
         status: 'in_progress',
         priority: 'urgent',
         dueDate: tomorrow,
@@ -369,8 +371,8 @@ const seedData = async () => {
       },
       {
         projectId: project3._id,
-        title: 'Build inventory restocking alerts',
-        description: 'Automated email alerts when inventory falls below threshold',
+        title: 'Build device health monitoring alerts',
+        description: 'Automated email alerts when device health metrics fall below threshold',
         status: 'in_progress',
         priority: 'high',
         dueDate: nextWeek,
@@ -379,8 +381,8 @@ const seedData = async () => {
       },
       {
         projectId: project3._id,
-        title: 'Create shipment tracking dashboard',
-        description: 'Real-time dashboard showing all active shipments and their status',
+        title: 'Create device diagnostics dashboard',
+        description: 'Real-time dashboard showing all connected devices and their health status',
         status: 'done',
         priority: 'high',
         dueDate: lastWeek,
@@ -389,8 +391,8 @@ const seedData = async () => {
       },
       {
         projectId: project3._id,
-        title: 'Implement pick and pack workflow',
-        description: 'Digital workflow for warehouse staff to pick and pack orders efficiently',
+        title: 'Implement remote configuration workflow',
+        description: 'Digital workflow for remotely configuring device settings and parameters',
         status: 'todo',
         priority: 'high',
         dueDate: nextWeek,
@@ -399,8 +401,8 @@ const seedData = async () => {
       },
       {
         projectId: project3._id,
-        title: 'Add warehouse location mapping',
-        description: 'Visual map of warehouse with product locations',
+        title: 'Add device network topology mapping',
+        description: 'Visual map of IoT device network with connection relationships',
         status: 'todo',
         priority: 'low',
         dueDate: twoWeeks,
@@ -408,11 +410,11 @@ const seedData = async () => {
         creatorId: amara._id,
       },
 
-      // Project 4 tasks (Supplier Integration Platform)
+      // Project 4 tasks (Hardware Integration Platform)
       {
         projectId: project4._id,
         title: 'Review API documentation',
-        description: 'Review supplier API integration documentation and provide feedback',
+        description: 'Review hardware supplier API integration documentation and provide feedback',
         status: 'in_progress',
         priority: 'high',
         dueDate: nextWeek,
@@ -422,7 +424,7 @@ const seedData = async () => {
       {
         projectId: project4._id,
         title: 'Build EDI integration module',
-        description: 'Implement EDI X12 integration for automated purchase orders',
+        description: 'Implement EDI X12 integration for automated hardware purchase orders',
         status: 'in_progress',
         priority: 'urgent',
         dueDate: tomorrow,
@@ -432,7 +434,7 @@ const seedData = async () => {
       {
         projectId: project4._id,
         title: 'Setup supplier portal authentication',
-        description: 'OAuth 2.0 authentication for supplier portal access',
+        description: 'OAuth 2.0 authentication for hardware supplier portal access',
         status: 'done',
         priority: 'urgent',
         dueDate: lastWeek,
@@ -442,7 +444,7 @@ const seedData = async () => {
       {
         projectId: project4._id,
         title: 'Create automated procurement workflow',
-        description: 'Automated purchase order generation based on inventory levels',
+        description: 'Automated purchase order generation for hardware components based on project needs',
         status: 'todo',
         priority: 'high',
         dueDate: nextWeek,
@@ -579,40 +581,40 @@ const seedData = async () => {
         action: 'created',
         entityType: 'project',
         entityId: project1._id,
-        changes: { name: 'Northwind Enterprise Portal', status: 'active' },
-        metadata: { source: 'web', ip: '192.168.1.100' },
+        metadata: { name: 'ElectroPi Enterprise Platform' },
+        changes: { status: 'active' },
       },
       {
         userId: amara._id,
         action: 'created',
         entityType: 'project',
         entityId: project2._id,
-        changes: { name: 'Customer Mobile App', status: 'active' },
-        metadata: { source: 'web', ip: '192.168.1.100' },
+        metadata: { name: 'Customer Mobile App' },
+        changes: { status: 'active' },
       },
       {
         userId: amara._id,
         action: 'created',
         entityType: 'project',
         entityId: project3._id,
-        changes: { name: 'Warehouse Management System', status: 'active' },
-        metadata: { source: 'web', ip: '192.168.1.100' },
+        metadata: { name: 'Warehouse Management System' },
+        changes: { status: 'active' },
       },
       {
         userId: manager1._id,
         action: 'created',
         entityType: 'project',
         entityId: project4._id,
-        changes: { name: 'Supplier Integration Platform', status: 'active' },
-        metadata: { source: 'web', ip: '192.168.1.50' },
+        metadata: { name: 'Hardware Integration Platform' },
+        changes: { status: 'active' },
       },
       {
         userId: amara._id,
         action: 'created',
         entityType: 'project',
         entityId: project5._id,
-        changes: { name: 'Business Intelligence Dashboard', status: 'active' },
-        metadata: { source: 'web', ip: '192.168.1.100' },
+        metadata: { name: 'Business Intelligence Dashboard' },
+        changes: { status: 'active' },
       },
       
       // Task assignments to Amara
@@ -621,32 +623,32 @@ const seedData = async () => {
         action: 'created',
         entityType: 'task',
         entityId: tasks[0]._id,
-        changes: { title: 'Review inventory dashboard wireframes', assignedTo: amara._id.toString(), priority: 'urgent' },
-        metadata: { projectName: 'Northwind Enterprise Portal', dueDate: formatDate(tomorrow) },
+        metadata: { title: 'Review IoT dashboard wireframes', projectId: project1._id },
+        changes: { assignedTo: amara._id.toString(), priority: 'urgent' },
       },
       {
         userId: amara._id,
         action: 'status_changed',
         entityType: 'task',
         entityId: tasks[0]._id,
+        metadata: { title: 'Review IoT dashboard wireframes', projectId: project1._id },
         changes: { from: 'todo', to: 'in_progress' },
-        metadata: { startedAt: now, comment: 'Started reviewing wireframes' },
       },
       {
         userId: amara._id,
         action: 'created',
         entityType: 'task',
         entityId: tasks[5]._id,
-        changes: { title: 'Approve app store screenshots', assignedTo: amara._id.toString(), priority: 'high' },
-        metadata: { projectName: 'Customer Mobile App', dueDate: formatDate(tomorrow) },
+        metadata: { title: 'Approve app store screenshots', projectId: project2._id },
+        changes: { assignedTo: amara._id.toString(), priority: 'high' },
       },
       {
         userId: amara._id,
         action: 'created',
         entityType: 'task',
         entityId: tasks[10]._id,
-        changes: { title: 'Test barcode scanner integration', assignedTo: amara._id.toString(), priority: 'urgent' },
-        metadata: { projectName: 'Warehouse Management System', dueDate: formatDate(tomorrow) },
+        metadata: { title: 'Test device firmware update', projectId: project3._id },
+        changes: { assignedTo: amara._id.toString(), priority: 'urgent' },
       },
       
       // Task status changes
@@ -681,24 +683,39 @@ const seedData = async () => {
         action: 'created',
         entityType: 'project_member',
         entityId: projectMembers[1]._id,
-        changes: { userId: manager1._id.toString(), role: 'editor' },
-        metadata: { projectName: 'Northwind Enterprise Portal', addedBy: 'Amara Okafar' },
+        metadata: { 
+          memberName: 'Sarah Williams',
+          projectName: 'ElectroPi Enterprise Platform', 
+          role: 'editor',
+          projectId: project1._id 
+        },
+        changes: { role: 'editor' },
       },
       {
         userId: amara._id,
         action: 'created',
         entityType: 'project_member',
         entityId: projectMembers[2]._id,
-        changes: { userId: member1._id.toString(), role: 'editor' },
-        metadata: { projectName: 'Northwind Enterprise Portal', addedBy: 'Amara Okafar' },
+        metadata: { 
+          memberName: 'John Doe',
+          projectName: 'ElectroPi Enterprise Platform', 
+          role: 'editor',
+          projectId: project1._id 
+        },
+        changes: { role: 'editor' },
       },
       {
         userId: manager1._id,
         action: 'created',
         entityType: 'project_member',
         entityId: projectMembers[17]._id,
-        changes: { userId: amara._id.toString(), role: 'editor' },
-        metadata: { projectName: 'Supplier Integration Platform', addedBy: 'Sarah Williams' },
+        metadata: { 
+          memberName: 'Amara Okafar',
+          projectName: 'Hardware Integration Platform', 
+          role: 'editor',
+          projectId: project4._id 
+        },
+        changes: { role: 'editor' },
       },
       
       // Project updates
@@ -707,8 +724,8 @@ const seedData = async () => {
         action: 'updated',
         entityType: 'project',
         entityId: project6._id,
+        metadata: { name: 'Legacy ERP Migration' },
         changes: { status: 'archived', previousStatus: 'active' },
-        metadata: { reason: 'Migration completed successfully', archivedAt: lastWeek },
       },
       
       // Additional task activity
@@ -717,16 +734,16 @@ const seedData = async () => {
         action: 'updated',
         entityType: 'task',
         entityId: tasks[19]._id,
-        changes: { priority: 'high', previousPriority: 'medium', dueDate: formatDate(tomorrow) },
-        metadata: { reason: 'Executive team needs KPIs finalized urgently' },
+        metadata: { title: 'Define KPI metrics', projectId: project5._id },
+        changes: { priority: { from: 'medium', to: 'high' } },
       },
       {
         userId: member2._id,
         action: 'updated',
         entityType: 'task',
         entityId: tasks[6]._id,
-        changes: { progress: 75, comment: 'Barcode scanner implementation nearly complete' },
-        metadata: { taskTitle: 'Implement barcode scanner', estimatedCompletion: formatDate(nextWeek) },
+        metadata: { title: 'Implement QR code scanner', projectId: project2._id },
+        changes: { description: 'Add device QR code scanning feature for quick device registration' },
       },
       {
         userId: amara._id,
@@ -734,21 +751,531 @@ const seedData = async () => {
         entityType: 'task',
         entityId: tasks[15]._id,
         changes: { title: 'Review API documentation', assignedTo: amara._id.toString(), priority: 'high' },
-        metadata: { projectName: 'Supplier Integration Platform', dueDate: formatDate(nextWeek) },
+        metadata: { projectName: 'Hardware Integration Platform', dueDate: formatDate(nextWeek) },
       },
     ]);
 
     console.log(`✅ Created ${auditLogs.length} audit logs`);
 
+    // ==================== CREATE NOTIFICATIONS ====================
+    console.log('🔔 Creating notifications...');
+    
+    const notifications = await Notification.create([
+      // ========== AMARA'S NOTIFICATIONS ==========
+      
+      // Task Assignment Notifications (Unread - High Priority)
+      {
+        recipientId: amara._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'You were assigned to "Review IoT dashboard wireframes"',
+        body: 'This task is marked as urgent and due tomorrow',
+        href: `/projects/${project1.slug}/tasks/${tasks[0]._id}`,
+        projectId: project1._id,
+        taskId: tasks[0]._id,
+        metadata: { 
+          priority: 'urgent',
+          status: 'in_progress',
+          dueDate: formatDate(tomorrow),
+          projectName: 'ElectroPi Enterprise Platform'
+        },
+        read: false,
+      },
+      {
+        recipientId: amara._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'You were assigned to "Approve app store screenshots"',
+        body: 'Task assigned in Customer Mobile App project',
+        href: `/projects/${project2.slug}/tasks/${tasks[5]._id}`,
+        projectId: project2._id,
+        taskId: tasks[5]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'in_progress',
+          dueDate: formatDate(tomorrow),
+          projectName: 'Customer Mobile App'
+        },
+        read: false,
+      },
+      {
+        recipientId: amara._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'You were assigned to "Test device firmware update"',
+        body: 'Urgent task requiring immediate attention',
+        href: `/projects/${project3.slug}/tasks/${tasks[10]._id}`,
+        projectId: project3._id,
+        taskId: tasks[10]._id,
+        metadata: { 
+          priority: 'urgent',
+          status: 'in_progress',
+          dueDate: formatDate(tomorrow),
+          projectName: 'IoT Device Management System'
+        },
+        read: false,
+      },
+      {
+        recipientId: amara._id,
+        actorId: manager1._id,
+        type: 'task_assigned',
+        title: 'Sarah Williams assigned you to "Review API documentation"',
+        body: 'Please review the hardware supplier API integration docs',
+        href: `/projects/${project4.slug}/tasks/${tasks[15]._id}`,
+        projectId: project4._id,
+        taskId: tasks[15]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'in_progress',
+          dueDate: formatDate(nextWeek),
+          projectName: 'Hardware Integration Platform',
+          actorName: 'Sarah Williams'
+        },
+        read: false,
+      },
+
+      // Task Status Change Notifications (Unread)
+      {
+        recipientId: amara._id,
+        actorId: member2._id,
+        type: 'task_status_changed',
+        title: 'Task "Setup authentication with Azure AD" marked as done',
+        body: 'Jane Smith completed this task',
+        href: `/projects/${project1.slug}/tasks/${tasks[2]._id}`,
+        projectId: project1._id,
+        taskId: tasks[2]._id,
+        metadata: { 
+          status: 'done',
+          previousStatus: 'in_progress',
+          projectName: 'ElectroPi Enterprise Platform',
+          actorName: 'Jane Smith'
+        },
+        read: false,
+      },
+      {
+        recipientId: amara._id,
+        actorId: member3._id,
+        type: 'task_completed',
+        title: 'Task "Build push notification system" completed',
+        body: 'Alice Johnson finished this task ahead of schedule',
+        href: `/projects/${project2.slug}/tasks/${tasks[7]._id}`,
+        projectId: project2._id,
+        taskId: tasks[7]._id,
+        metadata: { 
+          status: 'done',
+          projectName: 'Customer Mobile App',
+          actorName: 'Alice Johnson',
+          hoursSpent: 12
+        },
+        read: false,
+      },
+      {
+        recipientId: amara._id,
+        actorId: member1._id,
+        type: 'task_updated',
+        title: 'Task "Implement real-time device monitoring" started',
+        body: 'John Doe began working on this task',
+        href: `/projects/${project1.slug}/tasks/${tasks[1]._id}`,
+        projectId: project1._id,
+        taskId: tasks[1]._id,
+        metadata: { 
+          status: 'in_progress',
+          previousStatus: 'todo',
+          projectName: 'ElectroPi Enterprise Platform',
+          actorName: 'John Doe'
+        },
+        read: false,
+      },
+
+      // Project Member Notifications (Read)
+      {
+        recipientId: amara._id,
+        actorId: manager1._id,
+        type: 'project_member_added',
+        title: 'You were added to "Hardware Integration Platform"',
+        body: 'Sarah Williams added you as an editor',
+        href: `/projects/${project4.slug}`,
+        projectId: project4._id,
+        metadata: { 
+          role: 'editor',
+          projectName: 'Hardware Integration Platform',
+          actorName: 'Sarah Williams'
+        },
+        read: true,
+        readAt: new Date(now - 2 * 24 * 60 * 60 * 1000), // Read 2 days ago
+      },
+
+      // System Notifications (Read)
+      {
+        recipientId: amara._id,
+        actorId: null,
+        type: 'system',
+        title: 'Welcome to ElectroPi Task Manager!',
+        body: 'Your account has been successfully set up. Start by creating your first project.',
+        href: '/projects/new',
+        metadata: { 
+          systemMessage: true,
+          priority: 'info'
+        },
+        read: true,
+        readAt: new Date(now - 7 * 24 * 60 * 60 * 1000), // Read 7 days ago
+      },
+      {
+        recipientId: amara._id,
+        actorId: null,
+        type: 'system',
+        title: '5 tasks due tomorrow',
+        body: 'You have urgent tasks requiring attention',
+        href: '/tasks?filter=due-tomorrow',
+        metadata: { 
+          taskCount: 5,
+          urgentCount: 2,
+          highCount: 3
+        },
+        read: true,
+        readAt: new Date(now - 1 * 60 * 60 * 1000), // Read 1 hour ago
+      },
+
+      // ========== OTHER USERS' NOTIFICATIONS ==========
+
+      // Member1 (John Doe) notifications
+      {
+        recipientId: member1._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'Amara Okafar assigned you to "Implement real-time device monitoring"',
+        body: 'High priority task due tomorrow',
+        href: `/projects/${project1.slug}/tasks/${tasks[1]._id}`,
+        projectId: project1._id,
+        taskId: tasks[1]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'in_progress',
+          dueDate: formatDate(tomorrow),
+          projectName: 'ElectroPi Enterprise Platform',
+          actorName: 'Amara Okafar'
+        },
+        read: false,
+      },
+      {
+        recipientId: member1._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'You were assigned to "Build device health monitoring alerts"',
+        body: 'Task in IoT Device Management System',
+        href: `/projects/${project3.slug}/tasks/${tasks[11]._id}`,
+        projectId: project3._id,
+        taskId: tasks[11]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'in_progress',
+          projectName: 'IoT Device Management System'
+        },
+        read: false,
+      },
+      {
+        recipientId: member1._id,
+        actorId: manager1._id,
+        type: 'project_member_added',
+        title: 'Sarah Williams added you to "Hardware Integration Platform"',
+        body: 'You have been given editor access',
+        href: `/projects/${project4.slug}`,
+        projectId: project4._id,
+        metadata: { 
+          role: 'editor',
+          projectName: 'Hardware Integration Platform'
+        },
+        read: true,
+        readAt: new Date(now - 3 * 24 * 60 * 60 * 1000),
+      },
+
+      // Member2 (Jane Smith) notifications
+      {
+        recipientId: member2._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'You were assigned to "Implement QR code scanner"',
+        body: 'High priority task in Customer Mobile App',
+        href: `/projects/${project2.slug}/tasks/${tasks[6]._id}`,
+        projectId: project2._id,
+        taskId: tasks[6]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'in_progress',
+          dueDate: formatDate(nextWeek),
+          projectName: 'Customer Mobile App'
+        },
+        read: false,
+      },
+      {
+        recipientId: member2._id,
+        actorId: amara._id,
+        type: 'task_completed',
+        title: 'Great work on "Setup authentication with Azure AD"!',
+        body: 'Task marked as complete',
+        href: `/projects/${project1.slug}/tasks/${tasks[2]._id}`,
+        projectId: project1._id,
+        taskId: tasks[2]._id,
+        metadata: { 
+          status: 'done',
+          projectName: 'ElectroPi Enterprise Platform',
+          completedBy: 'Jane Smith'
+        },
+        read: true,
+        readAt: new Date(now - 1 * 24 * 60 * 60 * 1000),
+      },
+      {
+        recipientId: member2._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'Amara Okafar assigned you to "Build sales forecasting model"',
+        body: 'High priority ML task in BI Dashboard project',
+        href: `/projects/${project5.slug}/tasks/${tasks[20]._id}`,
+        projectId: project5._id,
+        taskId: tasks[20]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'in_progress',
+          projectName: 'Business Intelligence Dashboard'
+        },
+        read: false,
+      },
+
+      // Member3 (Alice Johnson) notifications
+      {
+        recipientId: member3._id,
+        actorId: amara._id,
+        type: 'task_completed',
+        title: 'Congratulations on completing "Build push notification system"!',
+        body: 'Your work was completed ahead of schedule',
+        href: `/projects/${project2.slug}/tasks/${tasks[7]._id}`,
+        projectId: project2._id,
+        taskId: tasks[7]._id,
+        metadata: { 
+          status: 'done',
+          projectName: 'Customer Mobile App',
+          hoursSpent: 12
+        },
+        read: false,
+      },
+      {
+        recipientId: member3._id,
+        actorId: manager1._id,
+        type: 'task_assigned',
+        title: 'Sarah Williams assigned you to "Create automated procurement workflow"',
+        body: 'High priority task in Hardware Integration Platform',
+        href: `/projects/${project4.slug}/tasks/${tasks[18]._id}`,
+        projectId: project4._id,
+        taskId: tasks[18]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'todo',
+          projectName: 'Hardware Integration Platform'
+        },
+        read: false,
+      },
+
+      // Member4 (Robert Garcia) notifications
+      {
+        recipientId: member4._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'You were assigned to "Design device catalog page"',
+        body: 'High priority UI design task',
+        href: `/projects/${project1.slug}/tasks/${tasks[3]._id}`,
+        projectId: project1._id,
+        taskId: tasks[3]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'todo',
+          dueDate: formatDate(nextWeek),
+          projectName: 'ElectroPi Enterprise Platform'
+        },
+        read: false,
+      },
+      {
+        recipientId: member4._id,
+        actorId: amara._id,
+        type: 'task_completed',
+        title: 'Task "Create device diagnostics dashboard" completed',
+        body: 'Great job on this deliverable!',
+        href: `/projects/${project3.slug}/tasks/${tasks[12]._id}`,
+        projectId: project3._id,
+        taskId: tasks[12]._id,
+        metadata: { 
+          status: 'done',
+          projectName: 'IoT Device Management System'
+        },
+        read: true,
+        readAt: new Date(now - 2 * 24 * 60 * 60 * 1000),
+      },
+      {
+        recipientId: member4._id,
+        actorId: amara._id,
+        type: 'project_member_added',
+        title: 'You were added to "ElectroPi Enterprise Platform"',
+        body: 'Amara Okafar added you as an editor',
+        href: `/projects/${project1.slug}`,
+        projectId: project1._id,
+        metadata: { 
+          role: 'editor',
+          projectName: 'ElectroPi Enterprise Platform'
+        },
+        read: true,
+        readAt: new Date(now - 5 * 24 * 60 * 60 * 1000),
+      },
+
+      // Member5 (Emily Brown) notifications
+      {
+        recipientId: member5._id,
+        actorId: manager2._id,
+        type: 'task_assigned',
+        title: 'You were assigned to "Build lead scoring algorithm"',
+        body: 'High priority task in Marketing Automation Platform',
+        href: `/projects/${project7.slug}/tasks/${tasks[29]._id}`,
+        projectId: project7._id,
+        taskId: tasks[29]._id,
+        metadata: { 
+          priority: 'high',
+          status: 'todo',
+          projectName: 'Marketing Automation Platform'
+        },
+        read: false,
+      },
+
+      // Member6 (David Martinez) notifications
+      {
+        recipientId: member6._id,
+        actorId: amara._id,
+        type: 'task_assigned',
+        title: 'Amara Okafar assigned you to "Add offline mode support"',
+        body: 'Medium priority task for mobile app',
+        href: `/projects/${project2.slug}/tasks/${tasks[8]._id}`,
+        projectId: project2._id,
+        taskId: tasks[8]._id,
+        metadata: { 
+          priority: 'medium',
+          status: 'todo',
+          dueDate: formatDate(nextWeek),
+          projectName: 'Customer Mobile App'
+        },
+        read: false,
+      },
+
+      // Manager1 (Sarah Williams) notifications
+      {
+        recipientId: manager1._id,
+        actorId: amara._id,
+        type: 'task_completed',
+        title: 'Task "Design executive dashboard UI" completed',
+        body: 'Dashboard design has been approved',
+        href: `/projects/${project5.slug}/tasks/${tasks[21]._id}`,
+        projectId: project5._id,
+        taskId: tasks[21]._id,
+        metadata: { 
+          status: 'done',
+          projectName: 'Business Intelligence Dashboard'
+        },
+        read: true,
+        readAt: new Date(now - 1 * 24 * 60 * 60 * 1000),
+      },
+      {
+        recipientId: manager1._id,
+        actorId: member1._id,
+        type: 'task_status_changed',
+        title: 'Task "Build EDI integration module" is now in progress',
+        body: 'John Doe started working on this urgent task',
+        href: `/projects/${project4.slug}/tasks/${tasks[16]._id}`,
+        projectId: project4._id,
+        taskId: tasks[16]._id,
+        metadata: { 
+          status: 'in_progress',
+          previousStatus: 'todo',
+          projectName: 'Hardware Integration Platform',
+          actorName: 'John Doe'
+        },
+        read: false,
+      },
+
+      // Manager2 (Michael Chen) notifications
+      {
+        recipientId: manager2._id,
+        actorId: member1._id,
+        type: 'task_completed',
+        title: 'Task "Integrate with CRM system" completed',
+        body: 'Salesforce integration is now live',
+        href: `/projects/${project7.slug}/tasks/${tasks[29]._id}`,
+        projectId: project7._id,
+        taskId: tasks[29]._id,
+        metadata: { 
+          status: 'done',
+          projectName: 'Marketing Automation Platform',
+          actorName: 'John Doe'
+        },
+        read: true,
+        readAt: new Date(now - 3 * 24 * 60 * 60 * 1000),
+      },
+      {
+        recipientId: manager2._id,
+        actorId: member1._id,
+        type: 'task_updated',
+        title: 'Task "Setup email campaign templates" updated',
+        body: 'John Doe is making progress on email templates',
+        href: `/projects/${project7.slug}/tasks/${tasks[28]._id}`,
+        projectId: project7._id,
+        taskId: tasks[28]._id,
+        metadata: { 
+          status: 'in_progress',
+          projectName: 'Marketing Automation Platform',
+          actorName: 'John Doe'
+        },
+        read: false,
+      },
+
+      // Admin notifications
+      {
+        recipientId: admin._id,
+        actorId: null,
+        type: 'system',
+        title: 'Project "Legacy ERP Migration" archived',
+        body: 'All tasks have been completed successfully',
+        href: `/projects/${project6.slug}`,
+        projectId: project6._id,
+        metadata: { 
+          status: 'archived',
+          projectName: 'Legacy ERP Migration',
+          completionRate: 100
+        },
+        read: true,
+        readAt: new Date(now - 2 * 24 * 60 * 60 * 1000),
+      },
+      {
+        recipientId: admin._id,
+        actorId: null,
+        type: 'system',
+        title: 'Weekly report: System performance metrics',
+        body: 'All systems running smoothly. 98.7% uptime this week.',
+        href: '/admin/reports',
+        metadata: { 
+          uptime: 98.7,
+          activeUsers: 11,
+          activeProjects: 6
+        },
+        read: false,
+      },
+    ]);
+
+    console.log(`✅ Created ${notifications.length} notifications`);
+
     console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
-║   ✅ Comprehensive Northwind Database Seeded Successfully!   ║
+║   ✅ Comprehensive ElectroPi Database Seeded Successfully!   ║
 ║                                                               ║
-║   🌟 Primary Account (Northwind):                            ║
+║   🌟 Primary Account (ElectroPi Labs):                       ║
 ║   ┌───────────────────────────────────────────────────────┐ ║
 ║   │ Name: Amara Okafar                                    │ ║
-║   │ Email: amara@northwind.io                             │ ║
+║   │ Email: amara@electropi.io                             │ ║
 ║   │ Password: Amara@123456                                │ ║
 ║   │ Role: Admin                                           │ ║
 ║   │ Projects Owned: 5 active projects                     │ ║
@@ -779,6 +1306,7 @@ const seedData = async () => {
 ║   - Amara's Tasks: 6 assigned                                ║
 ║   - Due Tomorrow: 5 tasks                                    ║
 ║   - Audit Logs: ${auditLogs.length}                                        ║
+║   - Notifications: ${notifications.length} (Amara: 10 total, 7 unread)    ║
 ║                                                               ║
 ║   🎯 Dashboard Ready:                                        ║
 ║   - Active projects with real team members                   ║

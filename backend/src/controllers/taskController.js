@@ -5,6 +5,11 @@ import AuditLog from '../models/AuditLog.js';
 import { asyncHandler } from '../middleware/error.js';
 import { emitTaskCreated, emitTaskUpdated, emitTaskDeleted, emitTaskStatusChanged } from '../config/socket.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../utils/uploadHelper.js';
+import {
+  notifyTaskAssigned,
+  notifyTaskUpdated,
+  notifyTaskCompleted,
+} from '../services/notificationService.js';
 
 /**
  * @route   GET /api/tasks
@@ -410,6 +415,11 @@ export const createTask = asyncHandler(async (req, res) => {
   // Emit socket event
   emitTaskCreated(projectId.toString(), taskObj);
 
+  // Fire-and-forget personal notification + email when the task is assigned
+  notifyTaskAssigned({ task: taskObj, project, actorId: req.user._id }).catch((err) =>
+    console.error('notifyTaskAssigned error:', err.message),
+  );
+
   res.status(201).json({
     success: true,
     data: taskObj,
@@ -513,6 +523,12 @@ export const updateTask = asyncHandler(async (req, res) => {
     });
     // Emit status changed event
     emitTaskStatusChanged(task.projectId.toString(), taskObj);
+
+    if (changes.status === 'done') {
+      notifyTaskCompleted({ task: taskObj, project, actor: req.user }).catch((err) =>
+        console.error('notifyTaskCompleted error:', err.message),
+      );
+    }
   } else {
     await AuditLog.create({
       userId: req.user._id,
@@ -524,6 +540,24 @@ export const updateTask = asyncHandler(async (req, res) => {
     });
     // Emit updated event
     emitTaskUpdated(task.projectId.toString(), taskObj);
+
+    notifyTaskUpdated({
+      task: taskObj,
+      project,
+      actor: req.user,
+      changes,
+    }).catch((err) => console.error('notifyTaskUpdated error:', err.message));
+  }
+
+  // If the assignee changed to a new person, notify them as well
+  if (
+    changes.assigneeId !== undefined &&
+    changes.assigneeId &&
+    String(changes.assigneeId) !== String(taskObj.assigneeId)
+  ) {
+    notifyTaskAssigned({ task: taskObj, project, actorId: req.user._id }).catch((err) =>
+      console.error('notifyTaskAssigned error:', err.message),
+    );
   }
 
   res.json({

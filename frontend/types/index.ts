@@ -90,6 +90,75 @@ export interface ActivityEvent {
   timestamp: ISODateString;
   createdAt: ISODateString;
   metadata?: Record<string, unknown>;
+  changes?: {
+    from?: string;
+    to?: string;
+    priority?: { from: string; to: string } | string;
+    assigneeId?: { from: string; to: string };
+    dueDate?: { from: string; to: string };
+  };
+  details?: {
+    actionType: string;
+    hasChanges: boolean;
+    statusChange?: {
+      from: string;
+      to: string;
+      fromLabel: string;
+      toLabel: string;
+    };
+    priorityChange?: {
+      from: string;
+      to: string;
+      fromLabel: string;
+      toLabel: string;
+    };
+    prioritySet?: {
+      value: string;
+      label: string;
+    };
+    assignmentChange?: {
+      from: string;
+      to: string;
+    };
+    dueDateChange?: {
+      from: string;
+      to: string;
+    };
+  };
+}
+
+export type NotificationType =
+  | "task_assigned"
+  | "task_updated"
+  | "task_completed"
+  | "task_status_changed"
+  | "project_member_added"
+  | "project_invite"
+  | "mention"
+  | "system";
+
+export interface AppNotification {
+  id: UUID;
+  recipientId: UUID;
+  actorId: UUID | null;
+  actor?: Pick<User, "id" | "name" | "email" | "avatarUrl" | "role"> | null;
+  type: NotificationType;
+  title: string;
+  body: string;
+  href: string | null;
+  projectId: UUID | null;
+  project?: { id: UUID; name: string; slug: string } | null;
+  taskId: UUID | null;
+  metadata?: Record<string, unknown>;
+  read: boolean;
+  readAt: ISODateString | null;
+  createdAt: ISODateString;
+  updatedAt?: ISODateString;
+}
+
+export interface NotificationsResponse {
+  items: AppNotification[];
+  unreadCount: number;
 }
 
 /* ---------- API envelopes ---------- */
@@ -163,4 +232,35 @@ export interface DashboardStats {
   totalTasks: number;
   completedTasks: number;
   pendingTasks: number;
+}
+
+/* ---------- Global search ---------- */
+
+export type SearchResultKind = "project" | "task";
+
+export interface SearchProjectHit {
+  id: UUID;
+  name: string;
+  slug: string;
+  description: string;
+  status: ProjectStatus;
+  ownerId: UUID;
+  coverImage?: string | null;
+}
+
+export interface SearchTaskHit {
+  id: UUID;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: ISODateString | null;
+  project: { id: UUID; name: string; slug: string } | null;
+  assignee: { id: UUID; name: string; avatarUrl?: string | null } | null;
+}
+
+export interface SearchResponse {
+  query: string;
+  projects: SearchProjectHit[];
+  tasks: SearchTaskHit[];
 }

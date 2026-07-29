@@ -7,7 +7,10 @@ import { uploadToCloudinary, deleteFromCloudinary } from '../utils/uploadHelper.
 
 /**
  * @route   GET /api/users
- * @desc    Get all users (Admin only for full list, others for project members)
+ * @desc    Get users in the workspace, scoped by role
+ *          - admin:    every user
+ *          - manager:  users that share a project with the manager
+ *          - member:   users that share a project with the member
  * @access  Private
  */
 export const getUsers = asyncHandler(async (req, res) => {
@@ -24,6 +27,25 @@ export const getUsers = asyncHandler(async (req, res) => {
       { name: { $regex: search, $options: 'i' } },
       { email: { $regex: search, $options: 'i' } },
     ];
+  }
+
+  // Non-admins: only return users that share a project with them
+  if (req.user.role !== 'admin') {
+    const memberships = await ProjectMember.find({ userId: req.user._id }).select('projectId');
+    const owned = await User.find({ _id: req.user._id }).select('_id');
+    void owned;
+    const myProjectIds = memberships.map((m) => m.projectId);
+
+    if (myProjectIds.length === 0) {
+      // No project access yet — only show the user themselves
+      query._id = req.user._id;
+    } else {
+      const coMembers = await ProjectMember.find({
+        projectId: { $in: myProjectIds },
+      }).select('userId');
+      const coMemberIds = [...new Set(coMembers.map((m) => m.userId.toString()))];
+      query._id = { $in: coMemberIds };
+    }
   }
 
   const users = await User.find(query)
@@ -98,9 +120,59 @@ export const getUserById = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @route   PATCH /api/users/:id/role
+ * @desc    Update a user's workspace role (Admin only)
+ * @access  Private (Admin)
+ */
+export const updateUserRole = asyncHandler(async (req, res) => {
+  const { role } = req.body;
+  const { id } = req.params;
+
+  const allowed = ['admin', 'manager', 'member'];
+  if (!allowed.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: `Role must be one of: ${allowed.join(', ')}`,
+    });
+  }
+
+  // Prevent the last admin from demoting themselves
+  if (
+    id === req.user.id &&
+    role !== 'admin'
+  ) {
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    if (adminCount <= 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot demote the last admin',
+      });
+    }
+  }
+
+  const user = await User.findByIdAndUpdate(
+    id,
+    { role },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+
+  res.json({
+    success: true,
+    data: user.toJSON(),
+  });
+});
+
+/**
  * @route   POST /api/users/invite
  * @desc    Invite a user to the workspace
- * @access  Private (Admin/Manager)
+ * @access  Private (Admin)
  */
 export const inviteUser = asyncHandler(async (req, res) => {
   const { email, role } = req.body;

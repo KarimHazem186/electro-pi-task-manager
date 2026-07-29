@@ -35,6 +35,47 @@
     "actionsFor": "إجراءات {name}",
     "toggleSidebar": "تبديل الشريط الجانبي"
   },
+  "activity": {
+    "created": "أنشأ",
+    "updated": "حدّث",
+    "deleted": "حذف",
+    "status_changed": "غيّر حالة",
+    "assigned": "عيّن",
+    "unassigned": "ألغى تعيين",
+    "priority_changed": "غيّر أولوية",
+    "due_date_changed": "غيّر تاريخ استحقاق",
+    "task": "مهمة",
+    "project": "مشروع",
+    "project_member": "عضو مشروع",
+    "entityTypes": {
+      "task": "مهمة",
+      "project": "مشروع",
+      "project_member": "عضو مشروع"
+    },
+    "actions": {
+      "created": "أنشأ",
+      "updated": "حدّث",
+      "deleted": "حذف",
+      "status_changed": "غيّر حالة",
+      "assigned": "عيّن",
+      "unassigned": "ألغى تعيين",
+      "priority_changed": "غيّر أولوية",
+      "due_date_changed": "غيّر تاريخ استحقاق"
+    },
+    "priorityLabel": "الأولوية:",
+    "dueDateLabel": "تاريخ الاستحقاق:",
+    "noDate": "لا يوجد تاريخ",
+    "setTo": "تم تعيينه إلى",
+    "timeAgo": {
+      "justNow": "الآن",
+      "minutesAgo": "منذ {count} دقيقة",
+      "hoursAgo": "منذ {count} ساعة",
+      "daysAgo": "منذ {count} يوم",
+      "weeksAgo": "منذ {count} أسبوع",
+      "monthsAgo": "منذ {count} شهر",
+      "yearsAgo": "منذ {count} سنة"
+    }
+  },
   "combobox": {
     "selectPlaceholder": "اختر…",
     "searchPlaceholder": "بحث…",
@@ -56,6 +97,7 @@
   "nav": {
     "workspace": "مساحة العمل",
     "account": "الحساب",
+    "admin": "المسؤول",
     "dashboard": "لوحة التحكم",
     "projects": "المشاريع",
     "myTasks": "مهامي",
@@ -64,9 +106,50 @@
     "settings": "الإعدادات",
     "logOut": "تسجيل الخروج"
   },
+  "admin": {
+    "description": "إدارة وإعدادات مساحة العمل",
+    "cards": {
+      "users": {
+        "title": "إدارة المستخدمين",
+        "description": "إدارة مستخدمي مساحة العمل وأدوارهم"
+      },
+      "projects": {
+        "title": "الإشراف على المشاريع",
+        "description": "عرض وإدارة جميع مشاريع مساحة العمل"
+      },
+      "activity": {
+        "title": "مراقبة النشاط",
+        "description": "تتبع النشاط على مستوى مساحة العمل"
+      }
+    },
+    "coming_soon": {
+      "title": "لوحة الإدارة قريباً",
+      "description": "ميزات الإدارة المتقدمة قيد التطوير:",
+      "features": {
+        "user_management": "دعوة وإدارة المستخدمين",
+        "role_management": "إدارة أدوار مساحة العمل",
+        "audit_logs": "عارض سجل التدقيق الكامل",
+        "workspace_settings": "تكوين مساحة العمل والعلامة التجارية"
+      }
+    }
+  },
   "topbar": {
     "search": "ابحث في المشاريع والمهام…",
-    "notifications": "الإشعارات"
+    "clear": "مسح البحث",
+    "searchHint": "اكتب حرفين على الأقل للبحث في المشاريع والمهام.",
+    "searching": "جارٍ البحث…",
+    "resultsCount": "{count, plural, =0 {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",
+    "emptyResults": "لا توجد نتائج لـ \"{query}\".",
+    "searchError": "تعذّر إكمال البحث. يرجى المحاولة مرة أخرى.",
+    "sectionProjects": "المشاريع",
+    "sectionTasks": "المهام",
+    "navigate": "التنقل",
+    "open": "فتح",
+    "close": "إغلاق",
+    "pressEnterForAll": "اضغط Enter لعرض جميع النتائج",
+    "notifications": "الإشعارات",
+    "profile": "الحساب",
+    "logoutSuccess": "تم تسجيل الخروج بنجاح"
   },
   "auth": {
     "login": {
@@ -129,6 +212,7 @@
     "nothingDue": "لا يوجد شيء مستحق",
     "allCaughtUp": "أنت على اطلاع بكل شيء.",
     "activity": "النشاط",
+    "noActivity": "لا يوجد نشاط حديث",
     "assignedHint": "ستظهر المهام المسندة إليك هنا."
   },
   "projects": {
@@ -138,6 +222,10 @@
     "searchPlaceholder": "ابحث في المشاريع…",
     "noProjects": "لا توجد مشاريع بعد",
     "createFirst": "أنشئ مشروعك الأول",
+    "status": {
+      "active": "نشط",
+      "archived": "مؤرشف"
+    },
     "card": {
       "tasksProgress": "{completed}/{total} مهمة"
     },
@@ -160,16 +248,45 @@
       "progress": "التقدم",
       "tasksProgress": "تم إكمال {completed} من {total} مهمة",
       "createdAt": "أُنشئ في {date}",
+      "updatedAt": "حُدِّث في {date}",
+      "about": "عن هذا المشروع",
       "membersHeading": "الأعضاء",
       "noMembers": "لا يوجد أعضاء بعد",
       "dangerZone": "منطقة الخطر",
       "dangerZoneDesc": "سيؤدي حذف المشروع إلى إزالة مهامه وسجله نهائيًا.",
-      "deleteProject": "حذف المشروع"
+      "deleteProject": "حذف المشروع",
+      "stats": {
+        "totalTasks": "إجمالي المهام",
+        "completed": "مكتملة",
+        "inProgress": "قيد التنفيذ",
+        "members": "الأعضاء"
+      }
     },
-    "memberRoles": {
+    "members": {
       "owner": "مالك",
       "editor": "محرر",
-      "viewer": "مشاهد"
+      "viewer": "مشاهد",
+      "addTitle": "إضافة عضو إلى المشروع",
+      "addDescription": "اختر عضوًا من مساحة العمل لإضافته إلى \"{name}\".",
+      "selectMember": "العضو",
+      "selectMemberPlaceholder": "ابحث بالاسم أو البريد…",
+      "projectRole": "دور المشروع",
+      "submit": "إضافة إلى المشروع",
+      "addSuccess": "تمت إضافة العضو إلى \"{name}\"",
+      "allAlreadyAdded": "كل أعضاء مساحة العمل موجودون بالفعل في هذا المشروع.",
+      "changeRole": "تغيير الدور",
+      "removeFromProject": "إزالة من المشروع",
+      "removeSuccess": "تمت إزالة {name} من المشروع",
+      "removeDialog": {
+        "title": "إزالة العضو؟",
+        "description": "سيفقد {name} صلاحية الوصول إلى هذا المشروع ومهامه."
+      },
+      "roleUpdateSuccess": "{name} أصبح الآن {role}",
+      "roleUpdateError": "تعذّر تغيير الدور. يرجى المحاولة مرة أخرى.",
+      "roleDescriptions": {
+        "editor": "يمكنه إنشاء وتعديل المهام في هذا المشروع.",
+        "viewer": "يمكنه عرض مهام المشروع دون تعديلها."
+      }
     },
     "form": {
       "create": "مشروع جديد",
@@ -292,6 +409,11 @@
       "manager": "مدير",
       "member": "عضو"
     },
+    "rolesPlural": {
+      "admins": "المسؤولون",
+      "managers": "المديرون",
+      "members": "الأعضاء"
+    },
     "roleDescriptions": {
       "admin": "وصول كامل لجميع إعدادات مساحة العمل",
       "manager": "إدارة المشاريع وأعضاء الفريق",
@@ -369,6 +491,13 @@
       "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
       "weakPassword": "كلمة المرور ضعيفة جدًا.",
       "unknownError": "حدث خطأ غير متوقع."
+    },
+    "permissions": {
+      "insufficientRole": "ليس لديك صلاحية لتنفيذ هذا الإجراء.",
+      "viewerCannotEdit": "المشاهدون يمكنهم عرض محتوى المشروع فقط. اتصل بمالك المشروع لترقية دورك.",
+      "editorCannotManage": "فقط مالكو المشاريع يمكنهم إدارة إعدادات المشروع والأعضاء.",
+      "adminOnly": "يتطلب هذا الإجراء صلاحيات المسؤول.",
+      "notProjectMember": "ليس لديك صلاحية الوصول إلى هذا المشروع."
     }
   },
   "empty": {
@@ -432,6 +561,26 @@
     }
   },
   "notifications": {
+    "title": "الإشعارات",
+    "markAll": "تمييز الكل كمقروء",
+    "markAsRead": "تمييز كمقروء",
+    "unread": "غير مقروء",
+    "unreadSummary": "{count, plural, =0 {اطّلعت على كل شيء} one {إشعار واحد غير مقروء} two {إشعاران غير مقروءين} few {# إشعارات غير مقروءة} many {# إشعارًا غير مقروءًا} other {# إشعار غير مقروء}}",
+    "allCaughtUp": "اطّلعت على كل شيء.",
+    "empty": "لا توجد إشعارات بعد",
+    "emptyDesc": "سنُعلمك عند حدوث أي شيء مهم.",
+    "lastMessages": "آخر {count} رسالة",
+    "manage": "إدارة الإشعارات",
+    "type": {
+      "task_assigned": "تم تعيين مهمة",
+      "task_updated": "تم تحديث المهمة",
+      "task_completed": "اكتملت المهمة",
+      "task_status_changed": "تغيرت الحالة",
+      "project_member_added": "دعوة مشروع",
+      "project_invite": "دعوة مشروع",
+      "mention": "إشارة",
+      "system": "النظام"
+    },
     "taskCreated": "مهمة جديدة: {title}",
     "taskCreatedDesc": "تم إنشاء مهمة جديدة",
     "taskUpdated": "تم تحديث المهمة: {title}",

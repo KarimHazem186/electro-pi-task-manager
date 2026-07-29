@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "@/services/project.service";
 import { queryKeys } from "@/hooks/query-keys";
-import type { ListQuery, ProjectPayload } from "@/types";
+import type { ListQuery, ProjectMemberRole, ProjectPayload } from "@/types";
 
 export function useProjects(query: ListQuery) {
   return useQuery({
@@ -48,5 +48,42 @@ export function useDeleteProject() {
   return useMutation({
     mutationFn: (id: string) => projectService.remove(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.projects.all }),
+  });
+}
+
+export function useAddProjectMember(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role?: ProjectMemberRole }) =>
+      projectService.addMember(projectId, userId, role),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+      qc.invalidateQueries({ queryKey: queryKeys.projects.members(projectId) });
+      qc.invalidateQueries({ queryKey: queryKeys.projects.all });
+    },
+  });
+}
+
+export function useUpdateProjectMember(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ memberId, role }: { memberId: string; role: ProjectMemberRole }) =>
+      projectService.updateMemberRole(projectId, memberId, role),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+      qc.invalidateQueries({ queryKey: queryKeys.projects.members(projectId) });
+    },
+  });
+}
+
+export function useRemoveProjectMember(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (memberId: string) => projectService.removeMember(projectId, memberId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+      qc.invalidateQueries({ queryKey: queryKeys.projects.members(projectId) });
+      qc.invalidateQueries({ queryKey: queryKeys.projects.all });
+    },
   });
 }
