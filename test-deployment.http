@@ -1,0 +1,35 @@
+### Test Backend Health
+GET https://electro-pi-task-manager-47cg.vercel.app/health
+
+### Test Backend Root
+GET https://electro-pi-task-manager-47cg.vercel.app/
+
+### Test API Docs
+GET https://electro-pi-task-manager-47cg.vercel.app/api-docs
+
+### Test CORS Preflight (Most Important!)
+OPTIONS https://electro-pi-task-manager-47cg.vercel.app/api/auth/login
+Origin: https://electro-pi-task-manager.vercel.app
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: Content-Type
+
+### Test Login (After CORS is fixed)
+POST https://electro-pi-task-manager-47cg.vercel.app/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@taskmanager.com",
+  "password": "Admin@123456"
+}
+
+### Test Get Current User (After Login)
+GET https://electro-pi-task-manager-47cg.vercel.app/api/auth/me
+
+### Test Get Projects
+GET https://electro-pi-task-manager-47cg.vercel.app/api/projects
+
+### Test Get Tasks
+GET https://electro-pi-task-manager-47cg.vercel.app/api/tasks
+
+### Test Frontend (Open in Browser)
+# https://electro-pi-task-manager.vercel.app

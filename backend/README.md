@@ -334,6 +334,9 @@ POST /api/auth/refresh
 
 ## 🔌 Real-time Updates (Socket.IO)
 
+> **Note**: Real-time features work locally and on platforms with persistent connection support (Render, Fly.io, Railway).  
+> Not active on Vercel production due to serverless architecture limitations. See [Deployment section](#-deployment) for details.
+
 ### Events
 
 **Client → Server**
@@ -418,7 +421,77 @@ After running `npm run seed`, you can use these accounts:
 
 ## 🌐 Deployment
 
-### Deploy to Render
+### Deploy to Vercel (Recommended - Serverless)
+
+#### Prerequisites
+1. **MongoDB Atlas** (required for production database)
+2. **Vercel Account** (free tier available)
+
+#### Deployment Steps
+
+1. **Install Vercel CLI** (optional)
+```bash
+npm i -g vercel
+```
+
+2. **Deploy via CLI** or connect GitHub repo to Vercel Dashboard
+
+3. **Configure Environment Variables in Vercel**
+Go to Vercel Dashboard → Project Settings → Environment Variables:
+
+```env
+NODE_ENV=production
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/<dbname>?retryWrites=true&w=majority
+JWT_SECRET=<64-char-random-hex-string>
+JWT_EXPIRE=15m
+JWT_REFRESH_SECRET=<different-64-char-random-hex-string>
+JWT_REFRESH_EXPIRE=7d
+COOKIE_EXPIRE=7
+FRONTEND_URL=https://your-frontend.vercel.app
+SOCKET_CORS_ORIGIN=https://your-frontend.vercel.app
+```
+
+4. **Deploy**
+```bash
+# From backend directory
+cd backend
+vercel --prod
+```
+
+#### ⚠️ Important Note: Real-time Features on Vercel
+
+**Socket.IO real-time updates are fully implemented and functional when running locally or on platforms that support persistent connections** (e.g., Render, Fly.io, Railway).
+
+**They are NOT active in the current Vercel production deployment** because Vercel's serverless architecture does not support long-lived WebSocket connections. Each serverless function executes for a single request and terminates, making persistent connections impossible.
+
+**What works on Vercel:**
+- ✅ All REST APIs (Authentication, Projects, Tasks, Users, Dashboard)
+- ✅ JWT authentication with HTTP-only cookies
+- ✅ All CRUD operations
+- ✅ Filtering, pagination, and search
+- ✅ Role-based access control
+- ✅ Input validation and security features
+
+**What doesn't work on Vercel:**
+- ❌ Socket.IO real-time task updates (bonus feature)
+
+**To test Socket.IO locally:**
+```bash
+npm run dev
+# Real-time features work perfectly in local environment
+```
+
+**Technical Explanation:**
+- Vercel uses **serverless functions** that execute on-demand and terminate after each request
+- Socket.IO requires **persistent connections** that stay open for continuous bi-directional communication
+- This is an architectural limitation, not an implementation issue
+- All Socket.IO code is production-ready and can be deployed to platforms like Render, Fly.io, or Railway
+
+---
+
+### Alternative: Deploy to Render (Full Support)
+
+If you need Socket.IO in production, use Render (requires credit card):
 
 1. Create new Web Service on Render
 2. Connect your GitHub repository
@@ -432,20 +505,26 @@ After running `npm run seed`, you can use these accounts:
    NODE_ENV=production
    MONGODB_URI=<your-mongodb-atlas-uri>
    JWT_SECRET=<secure-random-string>
-   JWT_EXPIRE=7d
+   JWT_REFRESH_SECRET=<different-secure-random-string>
+   JWT_EXPIRE=15m
+   JWT_REFRESH_EXPIRE=7d
+   COOKIE_EXPIRE=7
    FRONTEND_URL=<your-vercel-frontend-url>
    SOCKET_CORS_ORIGIN=<your-vercel-frontend-url>
    ```
 
-5. Deploy!
+5. Deploy! ✅ All features including Socket.IO will work
+
+---
 
 ### MongoDB Atlas Setup
 
-1. Create cluster at https://cloud.mongodb.com
-2. Create database user
-3. Whitelist IP: `0.0.0.0/0` (allow from anywhere)
-4. Get connection string
-5. Use connection string in `MONGODB_URI`
+1. Create free cluster at https://cloud.mongodb.com
+2. Create database user with strong password
+3. Network Access → Add IP: `0.0.0.0/0` (allow from anywhere)
+4. Get connection string from "Connect" → "Connect your application"
+5. Replace `<password>` and `<dbname>` in connection string
+6. Use in `MONGODB_URI` environment variable
 
 ## 📁 Project Structure
 

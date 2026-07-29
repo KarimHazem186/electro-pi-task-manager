@@ -51,7 +51,6 @@ docker-compose.override.yml
 # Extra documentation (keep locally only - not for GitHub)
 ASSESSMENT_CHECKLIST.md
 SUBMISSION.md
-DEPLOYMENT.md
 FEATURES.md
 TESTING_GUIDE.md
 RTL_SIDEBAR_FIX.md
@@ -66,7 +65,16 @@ TRANSLATION_AND_NOTIFICATIONS.md
 QUICK_START_AMARA.md
 SEED_SUMMARY.md
 GIT_COMMIT_GUIDE.md
+DEPLOYMENT.md
+DEPLOYMENT_FILES_SUMMARY.md
+DEPLOYMENT_NOTES.md
+DEPLOYMENT_NOTES_AR.md
+FIX_CORS_NOW.md
+QUICK_DEPLOY.md
+VERCEL_READY.md
 البدء_السريع_AMARA.md
+اعمل_كده_دلوقتي.md
+جاهز_للنشر.md
 
 # Backend documentation files (development only)
 backend/FRONTEND_MIGRATION_GUIDE.md
@@ -81,6 +89,8 @@ backend/SEED_QUICK_START.md
 backend/SEED_README.md
 backend/NORTHWIND_SEED_DATA.md
 backend/README_ARABIC.md
+backend/SOCKET_IO_EXPLANATION.md
+backend/VERCEL_DEPLOYMENT.md
 
 # Frontend documentation files (development only)
 frontend/TRANSLATION_EXAMPLES.md
@@ -94,3 +104,4 @@ START_SERVERS.bat
 
 
 
+.env*

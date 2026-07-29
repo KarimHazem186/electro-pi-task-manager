@@ -1,0 +1,35 @@
+⚠️ IMPORTANT: Environment Variables for Vercel Frontend
+============================================================
+
+Go to: https://vercel.com/dashboard
+→ Select your frontend project
+→ Settings → Environment Variables
+→ Add these variables:
+
+-----------------------------------------------------------
+
+NEXT_PUBLIC_API_BASE_URL=https://electro-pi-task-manager-47cg.vercel.app/api
+
+NEXT_PUBLIC_SOCKET_URL=https://electro-pi-task-manager-47cg.vercel.app
+
+-----------------------------------------------------------
+
+⚠️ CRITICAL: After adding these, you MUST:
+1. Save the environment variables
+2. Redeploy the frontend (Deployments → ... → Redeploy)
+
+-----------------------------------------------------------
+
+✅ Current Status:
+- Frontend URL: https://electro-pi-task-manager.vercel.app
+- Backend URL: https://electro-pi-task-manager-47cg.vercel.app
+- Backend Health: ✅ Working (tested)
+- CORS: ⚠️ Needs backend redeploy after env vars update
+
+-----------------------------------------------------------
+
+📝 Note about Socket.IO:
+NEXT_PUBLIC_SOCKET_URL is included for completeness, but 
+Socket.IO real-time features won't work on Vercel production
+due to serverless architecture limitations. They work perfectly
+when running locally with `npm run dev`.

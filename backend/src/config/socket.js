@@ -4,6 +4,13 @@ let io;
 
 /**
  * Initialize Socket.IO
+ * 
+ * NOTE: Socket.IO real-time features work when running locally or on platforms
+ * that support persistent connections (e.g., Render, Fly.io, Railway).
+ * They are NOT active on Vercel production deployment due to serverless 
+ * architecture limitations (no support for long-lived WebSocket connections).
+ * 
+ * All core REST APIs remain fully functional in all environments.
  */
 export const initializeSocket = (server) => {
   io = new Server(server, {

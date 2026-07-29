@@ -13,7 +13,8 @@
     "seed:verify": "node src/scripts/verify-seed.js",
     "security:audit": "npm audit",
     "security:audit:fix": "npm audit fix",
-    "security:check": "npm outdated"
+    "security:check": "npm outdated",
+    "vercel-build": "echo 'Building for Vercel serverless...' && npm install"
   },
   "keywords": [
     "task-manager",

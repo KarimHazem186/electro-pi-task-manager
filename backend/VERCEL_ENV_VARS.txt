@@ -1,0 +1,44 @@
+⚠️ IMPORTANT: Environment Variables for Vercel Backend
+============================================================
+
+Go to: https://vercel.com/dashboard
+→ Select your backend project
+→ Settings → Environment Variables
+→ Add these variables:
+
+-----------------------------------------------------------
+
+NODE_ENV=production
+
+MONGODB_URI=mongodb://karim:IiEnhNJoXmk8um2l@ac-o8k8pla-shard-00-00.pxny1d8.mongodb.net:27017,ac-o8k8pla-shard-00-01.pxny1d8.mongodb.net:27017,ac-o8k8pla-shard-00-02.pxny1d8.mongodb.net:27017/taskmanager?ssl=true&replicaSet=atlas-11jsse-shard-0&authSource=admin&retryWrites=true&w=majority
+
+JWT_SECRET=b8e342611dfd6f627d99b101a3806ffd0df49cb6f751a366b16f764bc00f89e04193c0c3784bb3ea0f297862dfd63f306ceb829fd666799bf1f294b2925809e3
+
+JWT_EXPIRE=15m
+
+JWT_REFRESH_SECRET=a7f9d2e8b4c1f3e6d9a2b5c8e1f4d7a0b3c6e9f2a5b8c1d4e7f0a3b6c9d2e5f8a1b4c7d0e3f6a9b2c5d8e1f4a7b0c3d6e9f2a5b8c1d4e7f0a3b6c9d2e5f8a1b4
+
+JWT_REFRESH_EXPIRE=7d
+
+COOKIE_EXPIRE=7
+
+FRONTEND_URL=https://electro-pi-task-manager.vercel.app
+
+SOCKET_CORS_ORIGIN=https://electro-pi-task-manager.vercel.app
+
+-----------------------------------------------------------
+
+⚠️ CRITICAL: After adding these, you MUST:
+1. Save the environment variables
+2. Redeploy the backend (Deployments → ... → Redeploy)
+
+Without redeployment, the old values will still be active!
+
+-----------------------------------------------------------
+
+🔒 SECURITY NOTE:
+These secrets are shown here for convenience during development.
+In a real production environment, you should:
+- Generate NEW secrets (don't reuse dev secrets)
+- Store them securely
+- Never commit them to git

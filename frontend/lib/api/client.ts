@@ -20,11 +20,28 @@ export const api: AxiosInstance = axios.create({
 // Handle API errors, token refresh, and extract data
 api.interceptors.response.use(
   (response) => {
-    // Backend returns data in { success: true, data: {...} }
+    // Backend returns data in { success: true, data: {...}, ...pagination }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (response.data && (response.data as any).success !== undefined) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return { ...response, data: (response.data as any).data || response.data };
+      const apiResponse = response.data as any;
+      
+      // If it has pagination info (page, pageSize, total, totalPages), preserve it
+      if (apiResponse.page !== undefined && apiResponse.totalPages !== undefined) {
+        return {
+          ...response,
+          data: {
+            data: apiResponse.data || [],
+            page: apiResponse.page,
+            pageSize: apiResponse.pageSize,
+            total: apiResponse.total,
+            totalPages: apiResponse.totalPages,
+          },
+        };
+      }
+      
+      // Otherwise just extract the data
+      return { ...response, data: apiResponse.data || response.data };
     }
     return response;
   },
