@@ -42,7 +42,7 @@ Alternatively, tokens can be sent as HTTP-only cookies.
         description: 'Development server',
       },
       {
-        url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : (process.env.API_URL || 'https://your-backend.vercel.app'),
+        url: 'https://electro-pi-task-manager-47cg.vercel.app',
         description: 'Production server',
       },
     ],
