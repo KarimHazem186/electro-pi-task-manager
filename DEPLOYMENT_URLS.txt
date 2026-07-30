@@ -1,0 +1,203 @@
+═══════════════════════════════════════════════════════════════
+   ELECTRO-PI TASK MANAGER - DEPLOYMENT URLS
+═══════════════════════════════════════════════════════════════
+
+✅ DEPLOYED SUCCESSFULLY ON VERCEL & GITHUB
+
+═══════════════════════════════════════════════════════════════
+   GITHUB REPOSITORY
+═══════════════════════════════════════════════════════════════
+
+🔗 Repository:
+   https://github.com/KarimHazem186/electro-pi-task-manager
+
+═══════════════════════════════════════════════════════════════
+   FRONTEND (Production)
+═══════════════════════════════════════════════════════════════
+
+🌐 Application:
+   https://electro-pi-task-manager.vercel.app
+
+📊 Vercel Dashboard:
+   https://vercel.com/karims-projects-45aaca9e/electro-pi-task-manager
+
+═══════════════════════════════════════════════════════════════
+   BACKEND API (Production)
+═══════════════════════════════════════════════════════════════
+
+🔌 API Base URL:
+   https://electro-pi-task-manager-47cg.vercel.app
+
+📄 API Root:
+   https://electro-pi-task-manager-47cg.vercel.app/
+
+💚 Health Check:
+   https://electro-pi-task-manager-47cg.vercel.app/health
+
+📚 Swagger UI (Interactive API Docs):
+   https://electro-pi-task-manager-47cg.vercel.app/api-docs
+
+📋 Swagger JSON:
+   https://electro-pi-task-manager-47cg.vercel.app/api-docs.json
+
+📊 Vercel Dashboard:
+   https://vercel.com/karims-projects-45aaca9e/electro-pi-task-manager-47cg
+
+═══════════════════════════════════════════════════════════════
+   API ENDPOINTS
+═══════════════════════════════════════════════════════════════
+
+All API endpoints are prefixed with /api
+
+Authentication:
+   POST   /api/auth/register
+   POST   /api/auth/login
+   POST   /api/auth/logout
+   GET    /api/auth/me
+   PATCH  /api/auth/profile
+   POST   /api/auth/change-password
+   POST   /api/auth/refresh
+
+Projects:
+   GET    /api/projects
+   POST   /api/projects
+   GET    /api/projects/{id}
+   PATCH  /api/projects/{id}
+   DELETE /api/projects/{id}
+
+Tasks:
+   GET    /api/tasks
+   POST   /api/tasks
+   GET    /api/tasks/{id}
+   PATCH  /api/tasks/{id}
+   DELETE /api/tasks/{id}
+
+Users:
+   GET    /api/users
+   GET    /api/users/{id}
+   PATCH  /api/users/{id}/role
+   DELETE /api/users/{id}
+
+Dashboard:
+   GET    /api/dashboard/stats
+   GET    /api/dashboard/activity
+
+Notifications:
+   GET    /api/notifications
+   PATCH  /api/notifications/{id}/read
+   DELETE /api/notifications/{id}
+
+Search:
+   GET    /api/search
+
+Upload:
+   POST   /api/upload/image
+   POST   /api/upload/images
+   DELETE /api/upload/image
+
+═══════════════════════════════════════════════════════════════
+   TESTING THE DEPLOYMENT
+═══════════════════════════════════════════════════════════════
+
+1. Open the Frontend:
+   https://electro-pi-task-manager.vercel.app
+
+2. Open Swagger UI:
+   https://electro-pi-task-manager-47cg.vercel.app/api-docs
+
+3. Register a new user or login
+
+4. Copy the JWT token from the response
+
+5. In Swagger UI, click "Authorize" and paste:
+   Bearer YOUR_JWT_TOKEN
+
+6. Test any API endpoint!
+
+═══════════════════════════════════════════════════════════════
+   FEATURES DEPLOYED
+═══════════════════════════════════════════════════════════════
+
+✅ Backend API (Node.js + Express)
+✅ Frontend (Next.js 15 + React 19)
+✅ MongoDB Atlas Database
+✅ JWT Authentication
+✅ Role-Based Access Control (RBAC)
+✅ Real-time Socket.IO
+✅ Cloudinary File Upload
+✅ Swagger API Documentation
+✅ Security Middleware (Helmet, CORS, Rate Limiting)
+✅ Input Validation (Zod)
+✅ Email Notifications (SMTP)
+✅ Activity Feed
+✅ Notifications System
+✅ Search Functionality
+✅ Responsive UI (Shadcn/UI + Tailwind CSS)
+✅ Arabic RTL Support
+
+═══════════════════════════════════════════════════════════════
+   ENVIRONMENT VARIABLES (Already Set in Vercel)
+═══════════════════════════════════════════════════════════════
+
+Backend Variables:
+✓ NODE_ENV
+✓ MONGODB_URI
+✓ JWT_SECRET
+✓ JWT_REFRESH_SECRET
+✓ FRONTEND_URL
+✓ CLOUDINARY_CLOUD_NAME
+✓ CLOUDINARY_API_KEY
+✓ CLOUDINARY_API_SECRET
+✓ SMTP_* (Email configuration)
+
+Frontend Variables:
+✓ NEXT_PUBLIC_API_BASE_URL
+✓ NEXT_PUBLIC_SOCKET_URL
+
+═══════════════════════════════════════════════════════════════
+   DEPLOYMENT STATUS
+═══════════════════════════════════════════════════════════════
+
+✅ GitHub: Pushed successfully
+✅ Backend: Deployed on Vercel
+✅ Frontend: Deployed on Vercel
+✅ Swagger: Accessible on production
+✅ API: Working and responding
+✅ Health Check: Passing
+
+🎉 ALL SYSTEMS OPERATIONAL!
+
+═══════════════════════════════════════════════════════════════
+   CREDENTIALS (From Seed Data)
+═══════════════════════════════════════════════════════════════
+
+Admin User:
+   Email: admin@electropi.com
+   Password: Admin@123
+
+Manager User:
+   Email: manager@electropi.com
+   Password: Manager@123
+
+Member User:
+   Email: member@electropi.com
+   Password: Member@123
+
+═══════════════════════════════════════════════════════════════
+   QUICK COMMANDS
+═══════════════════════════════════════════════════════════════
+
+Deploy Backend:
+   cd backend
+   vercel --prod
+
+Deploy Frontend:
+   cd frontend
+   vercel --prod
+
+Push to GitHub:
+   git add .
+   git commit -m "your message"
+   git push origin main
+
+═══════════════════════════════════════════════════════════════
