@@ -141,10 +141,17 @@ app.get('/api-docs', (req, res) => {
   <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"></script>
   <script>
     window.onload = function() {
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+      const specUrl = protocol + '//' + host + '/api-docs.json';
+      
       window.ui = SwaggerUIBundle({
-        url: '/api-docs.json',
+        url: specUrl,
         dom_id: '#swagger-ui',
         deepLinking: true,
+        docExpansion: 'list',
+        defaultModelsExpandDepth: 3,
+        defaultModelExpandDepth: 3,
         presets: [
           SwaggerUIBundle.presets.apis,
           SwaggerUIStandalonePreset
@@ -153,7 +160,13 @@ app.get('/api-docs', (req, res) => {
           SwaggerUIBundle.plugins.DownloadUrl
         ],
         layout: "StandaloneLayout",
-        persistAuthorization: true
+        persistAuthorization: true,
+        tryItOutEnabled: true,
+        filter: true,
+        syntaxHighlight: {
+          activate: true,
+          theme: "agate"
+        }
       });
     };
   </script>
