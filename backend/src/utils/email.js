@@ -9,6 +9,16 @@ import nodemailer from 'nodemailer';
  * @param {string} options.html - HTML content (optional)
  */
 export const sendEmail = async (options) => {
+  // Skip email sending in test environment
+  if (process.env.NODE_ENV === 'test') {
+    return {
+      messageId: 'test-message-id',
+      accepted: [options.to],
+      rejected: [],
+      response: 'Test email skipped',
+    };
+  }
+
   // Create transporter
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
