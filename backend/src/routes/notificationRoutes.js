@@ -13,7 +13,11 @@ import { z } from 'zod';
 
 const router = express.Router();
 
-const idSchema = z.object({ id: z.string().min(1) });
+const idParamSchema = z.object({
+  params: z.object({
+    id: z.string().min(1),
+  }),
+});
 
 router.use(protect);
 
@@ -91,7 +95,7 @@ router.delete('/', clearAll);
  *       200:
  *         description: Notification marked as read
  */
-router.patch('/:id/read', zodValidate(idSchema, 'params'), markAsRead);
+router.patch('/:id/read', zodValidate(idParamSchema), markAsRead);
 
 /**
  * @swagger
@@ -111,6 +115,6 @@ router.patch('/:id/read', zodValidate(idSchema, 'params'), markAsRead);
  *       200:
  *         description: Notification deleted successfully
  */
-router.delete('/:id', zodValidate(idSchema, 'params'), deleteNotification);
+router.delete('/:id', zodValidate(idParamSchema), deleteNotification);
 
 export default router;
