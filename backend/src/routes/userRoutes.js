@@ -83,7 +83,7 @@ router.get('/all', getAllUsers);
  */
 router.post(
   '/invite',
-  authorize('admin'),
+  authorize('admin', 'manager'),
   zodValidate(inviteUserSchema),
   inviteUser
 );

@@ -152,6 +152,13 @@
     border-color: var(--color-border);
   }
 
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
   /* Use Cairo font for entire app in RTL mode */
   html[dir="rtl"] * {
     font-family: var(--font-arabic) !important;
@@ -187,13 +194,6 @@
   /* Better handling for mixed content (Arabic + English) */
   html[dir="rtl"] * {
     unicode-bidi: plaintext;
-  }
-
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
   }
 }
 

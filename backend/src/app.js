@@ -19,6 +19,7 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
+import preferencesRoutes from './routes/preferencesRoutes.js';
 
 const app = express();
 
@@ -205,6 +206,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/preferences', preferencesRoutes);
 
 // Root route
 app.get('/', (req, res) => {

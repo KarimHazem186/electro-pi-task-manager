@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { ShieldCheck, Users, FolderKanban, Activity } from "lucide-react";
 
@@ -7,16 +8,24 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/lib/app-context";
 import { isAdmin } from "@/lib/permissions";
-import { redirect } from "@/i18n/routing";
+import { useRouter } from "@/i18n/routing";
 
 export default function AdminPage() {
   const t = useTranslations("admin");
   const tNav = useTranslations("nav");
-  const { currentUser } = useApp();
+  const { currentUser, ready } = useApp();
+  const router = useRouter();
 
   // Redirect non-admins
-  if (!isAdmin(currentUser)) {
-    redirect("/");
+  useEffect(() => {
+    if (ready && !isAdmin(currentUser)) {
+      router.push("/");
+    }
+  }, [currentUser, ready, router]);
+
+  // Don't render anything for non-admins
+  if (!ready || !isAdmin(currentUser)) {
+    return null;
   }
 
   return (

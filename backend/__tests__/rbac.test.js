@@ -15,70 +15,90 @@
  */
 
 import request from 'supertest';
+import mongoose from 'mongoose';
 import app from '../src/app.js';
 import User from '../src/models/User.js';
 import Project from '../src/models/Project.js';
 import ProjectMember from '../src/models/ProjectMember.js';
 import Task from '../src/models/Task.js';
-import { clearDatabase } from './setup.js';
 
 describe('RBAC - Role-Based Access Control', () => {
   let admin, manager, member, outsider;
   let adminToken, managerToken, memberToken, outsiderToken;
   let project, task;
 
+  beforeAll(async () => {
+    // Connect to test database (MongoDB Memory Server URI is set in globalSetup)
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(process.env.MONGODB_URI);
+    }
+  });
+
+  afterAll(async () => {
+    // Clean up and disconnect
+    await User.deleteMany({});
+    await Project.deleteMany({});
+    await ProjectMember.deleteMany({});
+    await Task.deleteMany({});
+    await mongoose.connection.close();
+  });
+
   beforeEach(async () => {
-    await clearDatabase();
+    // Clear all collections before each test
+    await User.deleteMany({});
+    await Project.deleteMany({});
+    await ProjectMember.deleteMany({});
+    await Task.deleteMany({});
 
     // Create users with different workspace roles
     admin = await User.create({
       name: 'Admin User',
       email: 'admin@test.com',
-      password: 'password123',
+      password: 'Admin@123456',
       role: 'admin',
     });
 
     manager = await User.create({
       name: 'Manager User',
       email: 'manager@test.com',
-      password: 'password123',
+      password: 'Manager@123456',
       role: 'manager',
     });
 
     member = await User.create({
       name: 'Member User',
       email: 'member@test.com',
-      password: 'password123',
+      password: 'Member@123456',
       role: 'member',
     });
 
     outsider = await User.create({
       name: 'Outsider User',
       email: 'outsider@test.com',
-      password: 'password123',
+      password: 'Outsider@123456',
       role: 'member',
     });
 
     // Get auth tokens
     const adminRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@test.com', password: 'password123' });
-    adminToken = adminRes.body.token;
+      .send({ email: 'admin@test.com', password: 'Admin@123456' });
+    adminToken = adminRes.body.tokens?.accessToken;
 
     const managerRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'manager@test.com', password: 'password123' });
-    managerToken = managerRes.body.token;
+      .send({ email: 'manager@test.com', password: 'Manager@123456' });
+    managerToken = managerRes.body.tokens?.accessToken;
 
     const memberRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'member@test.com', password: 'password123' });
-    memberToken = memberRes.body.token;
+      .send({ email: 'member@test.com', password: 'Member@123456' });
+    memberToken = memberRes.body.tokens?.accessToken;
 
     const outsiderRes = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'outsider@test.com', password: 'password123' });
-    outsiderToken = outsiderRes.body.token;
+      .send({ email: 'outsider@test.com', password: 'Outsider@123456' });
+    outsiderToken = outsiderRes.body.tokens?.accessToken;
 
     // Create a test project owned by manager with members
     project = await Project.create({
@@ -115,7 +135,7 @@ describe('RBAC - Role-Based Access Control', () => {
       projectId: project._id,
       status: 'todo',
       priority: 'medium',
-      createdBy: manager._id,
+      creatorId: manager._id,
     });
   });
 
@@ -126,7 +146,7 @@ describe('RBAC - Role-Based Access Control', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.data.projects).toHaveLength(1);
+      expect(res.body.data).toHaveLength(1);
     });
 
     it('should allow admin to access any project', async () => {
@@ -152,7 +172,7 @@ describe('RBAC - Role-Based Access Control', () => {
         .send({ role: 'manager' });
 
       expect(res.status).toBe(200);
-      expect(res.body.data.user.role).toBe('manager');
+      expect(res.body.data.role).toBe('manager');
     });
   });
 
@@ -209,7 +229,7 @@ describe('RBAC - Role-Based Access Control', () => {
         .send({ name: 'Updated Project Name' });
 
       expect(res.status).toBe(200);
-      expect(res.body.data.project.name).toBe('Updated Project Name');
+      expect(res.body.data.name).toBe('Updated Project Name');
     });
 
     it('should allow project owner to delete project', async () => {
@@ -224,7 +244,7 @@ describe('RBAC - Role-Based Access Control', () => {
       const newMember = await User.create({
         name: 'New Member',
         email: 'newmember@test.com',
-        password: 'password123',
+        password: 'NewMember@123456',
         role: 'member',
       });
 
@@ -381,14 +401,14 @@ describe('RBAC - Role-Based Access Control', () => {
       nonMember = await User.create({
         name: 'Non Member',
         email: 'nonmember@test.com',
-        password: 'password123',
+        password: 'NonMember@123456',
         role: 'member',
       });
 
       const res = await request(app)
         .post('/api/auth/login')
-        .send({ email: 'nonmember@test.com', password: 'password123' });
-      nonMemberToken = res.body.token;
+        .send({ email: 'nonmember@test.com', password: 'NonMember@123456' });
+      nonMemberToken = res.body.tokens?.accessToken;
     });
 
     it('should not allow non-member to access project', async () => {

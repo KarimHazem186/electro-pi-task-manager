@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   CheckCircle2,
   Clock,
@@ -19,20 +20,30 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { PriorityBadge, StatusBadge } from "@/components/shared/badges";
 import { ActivityItem } from "@/components/dashboard/activity-item";
-import { useActivityFeed, useDashboardStats } from "@/hooks/use-users";
+import { TaskDetailModal } from "@/components/tasks/task-detail-modal";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { useActivityFeed, useDashboardStats, useAllUsers } from "@/hooks/use-users";
 import { useProjects } from "@/hooks/use-projects";
-import { useAllTasks } from "@/hooks/use-tasks";
+import { useAllTasks, useUpdateTask, useDeleteTask } from "@/hooks/use-tasks";
 import { useApp } from "@/lib/app-context";
 import { dueDateTone, formatDate, formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
+import { toast } from "sonner";
+import type { Task, TaskPayload } from "@/types";
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const tEmpty = useTranslations("empty");
+  const tCommon = useTranslations("common");
+  const tTasks = useTranslations("tasks");
   const locale = useLocale();
   const isRtl = locale === "ar";
   const { currentUser } = useApp();
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
   const stats = useDashboardStats();
   const projects = useProjects({ page: 1, pageSize: 3 });
@@ -41,6 +52,35 @@ export default function DashboardPage() {
     { enabled: !!currentUser },
   );
   const activity = useActivityFeed();
+  const { data: usersData } = useAllUsers();
+  const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
+
+  const users = (usersData ?? []).map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    avatarUrl: u.avatarUrl,
+  }));
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setDetailOpen(true);
+  };
+
+  const handleUpdate = async (taskId: string, data: Partial<Task>) => {
+    await updateTask.mutateAsync({
+      id: taskId,
+      payload: data as Partial<TaskPayload>,
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!deletingTask) return;
+    await deleteTask.mutateAsync(deletingTask.id);
+    toast.success(tTasks("delete.title"));
+    setDeletingTask(null);
+  };
 
   const assigned = tasks.data ?? [];
   const upcoming = [...(tasks.data ?? [])]
@@ -143,9 +183,11 @@ export default function DashboardPage() {
               ))
             ) : upcoming.length ? (
               upcoming.map((task) => (
-                <div
+                <button
                   key={task.id}
-                  className="flex items-start justify-between gap-3"
+                  type="button"
+                  className="flex w-full items-start justify-between gap-3 text-start hover:underline focus:outline-none"
+                  onClick={() => handleTaskClick(task)}
                 >
                   <p className="min-w-0 truncate text-sm" dir="auto">{task.title}</p>
                   <span
@@ -156,7 +198,7 @@ export default function DashboardPage() {
                   >
                     {formatDate(task.dueDate)}
                   </span>
-                </div>
+                </button>
               ))
             ) : tasks.error ? (
               <EmptyState 
@@ -183,18 +225,20 @@ export default function DashboardPage() {
               ))
             ) : assigned.length ? (
               assigned.slice(0, 5).map((task) => (
-                <div
+                <button
                   key={task.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border p-3"
+                  type="button"
+                  className="flex w-full flex-wrap items-center justify-between gap-2 rounded-xl border border-border p-3 text-start hover:bg-secondary/60 focus:outline-none"
+                  onClick={() => handleTaskClick(task)}
                 >
-                  <p className="min-w-0 flex-1 truncate text-sm font-medium" dir="auto">
+                  <p className="min-w-0 flex-1 truncate text-sm font-medium hover:underline" dir="auto">
                     {task.title}
                   </p>
                   <div className="flex shrink-0 items-center gap-2">
                     <PriorityBadge priority={task.priority} />
                     <StatusBadge status={task.status} />
                   </div>
-                </div>
+                </button>
               ))
             ) : (
               <EmptyState
@@ -228,6 +272,38 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        open={detailOpen}
+        onOpenChange={(open) => {
+          setDetailOpen(open);
+          if (!open) setSelectedTask(null);
+        }}
+        onUpdate={handleUpdate}
+        onDelete={(task) => {
+          setDetailOpen(false);
+          setSelectedTask(null);
+          setDeletingTask(task);
+        }}
+        users={users}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(deletingTask)}
+        onOpenChange={(open) => !open && setDeletingTask(null)}
+        title={tTasks("delete.title")}
+        description={tTasks("delete.description", {
+          title: deletingTask?.title ?? "",
+        })}
+        confirmLabel={tCommon("delete")}
+        cancelLabel={tCommon("cancel")}
+        destructive
+        loading={deleteTask.isPending}
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

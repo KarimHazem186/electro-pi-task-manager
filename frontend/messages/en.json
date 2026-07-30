@@ -2,12 +2,15 @@
   "common": {
     "appName": "Task Manager",
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "create": "Create",
     "update": "Update",
     "delete": "Delete",
     "edit": "Edit",
     "back": "Back",
+    "view": "View",
+    "close": "Close",
     "loading": "Loading…",
     "tryAgain": "Try again",
     "goHome": "Go home",
@@ -359,6 +362,10 @@
       "unassigned": "Unassigned",
       "submitCreate": "Create task",
       "submitUpdate": "Save changes",
+      "createdBy": "Created by",
+      "noDescription": "No description provided",
+      "noDueDate": "No due date",
+      "attachments": "Attachments",
       "errors": {
         "titleMin": "Title must be at least 3 characters",
         "projectRequired": "Project is required"
@@ -431,6 +438,8 @@
     "confirmNewPassword": "Confirm new password",
     "saveChanges": "Save changes",
     "updatePassword": "Update password",
+    "profileUpdated": "Profile updated successfully",
+    "passwordChanged": "Password changed successfully",
     "errors": {
       "nameMin": "Name is too short",
       "emailInvalid": "Enter a valid email",
@@ -444,6 +453,7 @@
     "title": "Settings",
     "subtitle": "Workspace preferences.",
     "notifications": "Notifications",
+    "saved": "Settings saved successfully",
     "toggles": {
       "email": {
         "label": "Email notifications",

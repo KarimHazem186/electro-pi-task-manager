@@ -3,9 +3,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { AvatarUpload } from "@/components/shared/avatar-upload";
@@ -21,8 +22,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { currentUser } from "@/data/mock";
 import { useProfilePictureUpload } from "@/hooks/use-upload";
+import { useApp } from "@/lib/app-context";
+import { authService } from "@/services/auth.service";
 
 export default function ProfilePage() {
   const t = useTranslations("profile");
@@ -30,7 +32,38 @@ export default function ProfilePage() {
   const tErrors = useTranslations("profile.errors");
   const tUpload = useTranslations("upload.avatar");
 
-  const { upload, deleteAvatar, isUploading, isDeleting } = useProfilePictureUpload();
+  const { currentUser, setUser } = useApp();
+  const queryClient = useQueryClient();
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Pass setUser to the upload hook so it can update the context
+  const { upload: uploadAvatar, deleteAvatar: removeAvatar, isUploading, isDeleting } = useProfilePictureUpload();
+  
+  // Wrapper to update context after avatar upload
+  const upload = async (file: File) => {
+    await uploadAvatar(file);
+    // Refresh user data
+    try {
+      const updatedUser = await authService.me();
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
+
+  const deleteAvatar = async () => {
+    removeAvatar();
+    // Refresh user data after a short delay to let backend process
+    setTimeout(async () => {
+      try {
+        const updatedUser = await authService.me();
+        setUser(updatedUser);
+      } catch (error) {
+        console.error('Failed to refresh user:', error);
+      }
+    }, 500);
+  };
 
   const profileSchema = useMemo(
     () =>
@@ -59,7 +92,10 @@ export default function ProfilePage() {
   const profileForm = useForm<z.infer<typeof profileSchema>>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(profileSchema as any),
-    defaultValues: { name: currentUser.name, email: currentUser.email },
+    defaultValues: { 
+      name: currentUser?.name || "", 
+      email: currentUser?.email || "" 
+    },
   });
 
   const passwordForm = useForm<z.infer<typeof passwordSchema>>({
@@ -67,6 +103,44 @@ export default function ProfilePage() {
     resolver: zodResolver(passwordSchema as any),
     defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
   });
+
+  // Handle profile update
+  const handleProfileUpdate = async (data: z.infer<typeof profileSchema>) => {
+    try {
+      setIsUpdatingProfile(true);
+      const updatedUser = await authService.updateProfile(data);
+      setUser(updatedUser);
+      toast.success(t("profileUpdated"));
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Failed to update profile";
+      toast.error(message);
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  // Handle password change
+  const handlePasswordChange = async (data: z.infer<typeof passwordSchema>) => {
+    try {
+      setIsChangingPassword(true);
+      await authService.changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      });
+      toast.success(t("passwordChanged"));
+      passwordForm.reset();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Failed to change password";
+      toast.error(message);
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <>
@@ -76,8 +150,8 @@ export default function ProfilePage() {
         <Card className="rounded-xl border-border shadow-soft">
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
             <AvatarUpload
-              value={currentUser.avatarUrl || undefined}
-              name={currentUser.name}
+              value={currentUser?.avatarUrl || undefined}
+              name={currentUser?.name || ""}
               onFileSelect={upload}
               onDelete={deleteAvatar}
               isUploading={isUploading}
@@ -85,11 +159,11 @@ export default function ProfilePage() {
               size="xl"
             />
             <div>
-              <p className="font-semibold">{currentUser.name}</p>
-              <p className="text-sm text-muted-foreground">{currentUser.email}</p>
+              <p className="font-semibold">{currentUser?.name}</p>
+              <p className="text-sm text-muted-foreground">{currentUser?.email}</p>
             </div>
             <Badge variant="outline" className="capitalize">
-              {currentUser.role}
+              {currentUser?.role}
             </Badge>
             <p className="text-xs text-muted-foreground">{tUpload("title")}</p>
           </CardContent>
@@ -104,9 +178,7 @@ export default function ProfilePage() {
               <Form {...profileForm}>
                 <form
                   className="space-y-4"
-                  onSubmit={profileForm.handleSubmit(() =>
-                    toast.success(t("updateProfile")),
-                  )}
+                  onSubmit={profileForm.handleSubmit(handleProfileUpdate)}
                 >
                   <FormField
                     control={profileForm.control}
@@ -115,7 +187,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>{tCommon("name")}</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} disabled={isUpdatingProfile} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -128,13 +200,15 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>{tCommon("email")}</FormLabel>
                         <FormControl>
-                          <Input type="email" {...field} />
+                          <Input type="email" {...field} disabled={isUpdatingProfile} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit">{t("saveChanges")}</Button>
+                  <Button type="submit" disabled={isUpdatingProfile}>
+                    {isUpdatingProfile ? tCommon("saving") : t("saveChanges")}
+                  </Button>
                 </form>
               </Form>
             </CardContent>
@@ -148,10 +222,7 @@ export default function ProfilePage() {
               <Form {...passwordForm}>
                 <form
                   className="space-y-4"
-                  onSubmit={passwordForm.handleSubmit(() => {
-                    toast.success(t("changePassword"));
-                    passwordForm.reset();
-                  })}
+                  onSubmit={passwordForm.handleSubmit(handlePasswordChange)}
                 >
                   <FormField
                     control={passwordForm.control}
@@ -164,6 +235,7 @@ export default function ProfilePage() {
                             type="password"
                             placeholder={t("currentPasswordPlaceholder")}
                             {...field}
+                            disabled={isChangingPassword}
                           />
                         </FormControl>
                         <FormMessage />
@@ -178,7 +250,7 @@ export default function ProfilePage() {
                         <FormItem>
                           <FormLabel>{t("newPassword")}</FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} />
+                            <Input type="password" {...field} disabled={isChangingPassword} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -191,14 +263,16 @@ export default function ProfilePage() {
                         <FormItem>
                           <FormLabel>{t("confirmNewPassword")}</FormLabel>
                           <FormControl>
-                            <Input type="password" {...field} />
+                            <Input type="password" {...field} disabled={isChangingPassword} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  <Button type="submit">{t("updatePassword")}</Button>
+                  <Button type="submit" disabled={isChangingPassword}>
+                    {isChangingPassword ? tCommon("saving") : t("updatePassword")}
+                  </Button>
                 </form>
               </Form>
             </CardContent>

@@ -120,29 +120,63 @@ export const canManageProjectMembers = (
 /* ---------- Task-specific helpers ---------- */
 
 /**
- * Check if user can modify a task (edit/delete).
- * This is a simplified check when you have a task object but not the full project.
- * Admins can always modify tasks, and task creators can modify their own tasks.
- * For more precise project-role checking, use canEditTaskInProject() with the project object.
+ * Check if user can edit a task (change status, update details).
+ * - Admins can edit any task
+ * - Task creators can edit their own tasks
+ * - Task assignees can edit their assigned tasks (update status, etc.)
+ * - For project-role based checking, use canEditTaskInProject() with project object
  */
-export const canModifyTask = (
+export const canEditTask = (
   user: User | null | undefined,
   task: Task | null | undefined,
 ): boolean => {
   if (!user || !task) return false;
   
-  // Admins can modify any task
+  // Admins can edit any task
   if (user.role === "admin") return true;
   
-  // Task creator can modify their own task
+  // Task creator can edit their own task
   if (task.creatorId === user.id) return true;
   
-  // Task assignee can modify their assigned task
+  // Task assignee can edit their assigned task
   if (task.assigneeId === user.id) return true;
   
-  // For more precise checking, the calling code should use canEditTaskInProject
-  // with the full project object when available
   return false;
+};
+
+/**
+ * Check if user can delete a task.
+ * - Admins can delete any task
+ * - Task creators can delete their own tasks
+ * - Assignees CANNOT delete tasks (only edit)
+ */
+export const canDeleteTask = (
+  user: User | null | undefined,
+  task: Task | null | undefined,
+): boolean => {
+  if (!user || !task) return false;
+  
+  // Admins can delete any task
+  if (user.role === "admin") return true;
+  
+  // Task creator can delete their own task
+  if (task.creatorId === user.id) return true;
+  
+  // Assignees cannot delete tasks
+  return false;
+};
+
+/**
+ * @deprecated Use canEditTask() and canDeleteTask() instead for more granular control
+ * Check if user can modify a task (edit/delete).
+ * This is a simplified check when you have a task object but not the full project.
+ */
+export const canModifyTask = (
+  user: User | null | undefined,
+  task: Task | null | undefined,
+): boolean => {
+  // For backward compatibility, use the edit permission
+  return canEditTask(user, task);
 };
 
 /* ---------- UI labels ---------- */

@@ -441,20 +441,39 @@ export const updateTask = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check permissions
+  // Get project first for later use
   const project = await Project.findById(task.projectId);
-
-  if (req.user.role !== 'admin' && project.ownerId.toString() !== req.user._id.toString()) {
-    const membership = await ProjectMember.findOne({
-      projectId: task.projectId,
-      userId: req.user._id,
+  
+  if (!project) {
+    return res.status(404).json({
+      success: false,
+      message: 'Project not found',
     });
+  }
 
-    if (!membership || membership.role === 'viewer') {
-      return res.status(403).json({
-        success: false,
-        message: 'You do not have permission to update this task',
+  // Check permissions
+  // Admins can edit any task
+  // Task creator can edit their task
+  // Task assignee can edit their assigned task
+  // Project editors can edit tasks in their project
+  const isAdmin = req.user.role === 'admin';
+  const isCreator = task.creatorId.toString() === req.user._id.toString();
+  const isAssignee = task.assigneeId && task.assigneeId.toString() === req.user._id.toString();
+
+  if (!isAdmin && !isCreator && !isAssignee) {
+    // Check project role
+    if (project.ownerId.toString() !== req.user._id.toString()) {
+      const membership = await ProjectMember.findOne({
+        projectId: task.projectId,
+        userId: req.user._id,
       });
+
+      if (!membership || membership.role === 'viewer') {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have permission to update this task',
+        });
+      }
     }
   }
 
@@ -581,20 +600,35 @@ export const deleteTask = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check permissions
-  const project = await Project.findById(task.projectId);
+  // Check permissions: Admin, task creator, or project editors can delete
+  const isAdmin = req.user.role === 'admin';
+  const isCreator = task.creatorId.toString() === req.user._id.toString();
 
-  if (req.user.role !== 'admin' && project.ownerId.toString() !== req.user._id.toString()) {
-    const membership = await ProjectMember.findOne({
-      projectId: task.projectId,
-      userId: req.user._id,
-    });
-
-    if (!membership || membership.role === 'viewer') {
-      return res.status(403).json({
+  if (!isAdmin && !isCreator) {
+    // Check if user is project owner or editor
+    const project = await Project.findById(task.projectId);
+    
+    if (!project) {
+      return res.status(404).json({
         success: false,
-        message: 'You do not have permission to delete this task',
+        message: 'Project not found',
       });
+    }
+    
+    const isOwner = project.ownerId.toString() === req.user._id.toString();
+    
+    if (!isOwner) {
+      const membership = await ProjectMember.findOne({
+        projectId: task.projectId,
+        userId: req.user._id,
+      });
+
+      if (!membership || membership.role === 'viewer') {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have permission to delete this task. Only project owner, editors, task creator, or admin can delete tasks.',
+        });
+      }
     }
   }
 

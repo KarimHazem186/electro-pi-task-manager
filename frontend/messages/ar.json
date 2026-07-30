@@ -2,12 +2,15 @@
   "common": {
     "appName": "نورثويند",
     "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
     "cancel": "إلغاء",
     "create": "إنشاء",
     "update": "تحديث",
     "delete": "حذف",
     "edit": "تعديل",
     "back": "رجوع",
+    "view": "عرض",
+    "close": "إغلاق",
     "loading": "جارٍ التحميل…",
     "tryAgain": "حاول مرة أخرى",
     "goHome": "الصفحة الرئيسية",
@@ -359,6 +362,10 @@
       "unassigned": "غير مسند",
       "submitCreate": "إنشاء المهمة",
       "submitUpdate": "حفظ التغييرات",
+      "createdBy": "أنشأها",
+      "noDescription": "لا يوجد وصف",
+      "noDueDate": "لا يوجد تاريخ استحقاق",
+      "attachments": "المرفقات",
       "errors": {
         "titleMin": "يجب أن يكون العنوان 3 أحرف على الأقل",
         "projectRequired": "المشروع مطلوب"
@@ -431,6 +438,8 @@
     "confirmNewPassword": "تأكيد كلمة المرور الجديدة",
     "saveChanges": "حفظ التغييرات",
     "updatePassword": "تحديث كلمة المرور",
+    "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+    "passwordChanged": "تم تغيير كلمة المرور بنجاح",
     "errors": {
       "nameMin": "الاسم قصير جدًا",
       "emailInvalid": "أدخل بريدًا إلكترونيًا صالحًا",
@@ -444,6 +453,7 @@
     "title": "الإعدادات",
     "subtitle": "تفضيلات مساحة العمل.",
     "notifications": "الإشعارات",
+    "saved": "تم حفظ الإعدادات بنجاح",
     "toggles": {
       "email": {
         "label": "إشعارات البريد الإلكتروني",

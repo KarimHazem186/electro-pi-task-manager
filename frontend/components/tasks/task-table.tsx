@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -23,11 +24,14 @@ import {
 import { PriorityBadge, StatusBadge } from "@/components/shared/badges";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { EmptyState } from "@/components/shared/empty-state";
+import { TaskDetailModal } from "@/components/tasks/task-detail-modal";
 import { useApp } from "@/lib/app-context";
-import { canModifyTask } from "@/lib/permissions";
+import { canEditTask, canDeleteTask } from "@/lib/permissions";
 import { dueDateTone, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Task } from "@/types";
+import { useAllUsers } from "@/hooks/use-users";
+import { useUpdateTask } from "@/hooks/use-tasks";
+import type { Task, TaskPayload } from "@/types";
 
 export function TaskTable({
   tasks,
@@ -48,208 +52,298 @@ export function TaskTable({
   const tCommon = useTranslations("common");
   const { currentUser } = useApp();
 
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  const { data: usersData } = useAllUsers();
+  const updateTask = useUpdateTask();
+
+  const users = (usersData ?? []).map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    avatarUrl: u.avatarUrl,
+  }));
+
+  const handleRowClick = (task: Task) => {
+    setSelectedTask(task);
+    setDetailOpen(true);
+  };
+
+  const handleUpdate = async (taskId: string, data: Partial<Task>) => {
+    await updateTask.mutateAsync({
+      id: taskId,
+      payload: data as Partial<TaskPayload>,
+    });
+  };
+
   if (!isLoading && tasks.length === 0) {
-    return (
-      <EmptyState title={t("empty")} description={t("emptyDesc")} />
-    );
+    return <EmptyState title={t("empty")} description={t("emptyDesc")} />;
   }
 
   return (
     <>
       {/* Desktop Table View */}
-      <div className="hidden overflow-x-auto rounded-xl border border-border bg-card shadow-soft md:block">
+      <div className="hidden rounded-xl border border-border bg-card shadow-soft md:block">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="min-w-56">
-                <button
-                  type="button"
-                  onClick={onToggleSort}
-                  className="flex items-center gap-1.5 font-medium transition-colors hover:text-foreground"
-                >
-                  {tCommon("title")}
-                  <ArrowUpDown className="size-3.5" aria-hidden />
-                  <span className="sr-only">
-                    Sort {sortDir === "asc" ? "descending" : "ascending"}
-                  </span>
-                </button>
-              </TableHead>
-              <TableHead>{tCommon("priority")}</TableHead>
-              <TableHead>{tCommon("status")}</TableHead>
-              <TableHead>{tCommon("assignee")}</TableHead>
-              <TableHead>{tCommon("dueDate")}</TableHead>
-              <TableHead className="w-12 text-end">
-                {tCommon("actions")}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading
-              ? Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  {Array.from({ length: 6 }).map((__, cell) => (
-                    <TableCell key={cell}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-              : tasks.map((task) => {
-                const allowed = canModifyTask(currentUser, task);
-                return (
-                  <TableRow key={task.id}>
-                    <TableCell className="max-w-xs">
-                      <p className="truncate font-medium">{task.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {task.description}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <PriorityBadge priority={task.priority} />
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={task.status} />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {task.assignee ? (
-                          <>
-                            <UserAvatar
-                              user={task.assignee}
-                              className="size-6"
-                            />
-                            <span className="text-sm">{task.assignee.name}</span>
-                          </>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            {t("form.unassigned")}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell
-                      className={cn("text-sm", dueDateTone(task.dueDate))}
-                    >
-                      {formatDate(task.dueDate)}
-                    </TableCell>
-                    <TableCell className="text-end">
-                      {allowed ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="size-8"
-                              aria-label={tCommon("actionsFor", { name: task.title })}
-                            >
-                              <MoreHorizontal className="size-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-36">
-                            <DropdownMenuItem onSelect={() => onEdit(task)}>
-                              <Pencil className="size-4" /> {tCommon("edit")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onSelect={() => onDelete(task)}
-                            >
-                              <Trash2 className="size-4" /> {tCommon("delete")}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      ) : (
-                        <span className="text-xs text-muted-foreground px-2">—</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
+                  <button
+                    type="button"
+                    onClick={onToggleSort}
+                    className="flex items-center gap-1.5 font-medium transition-colors hover:text-foreground"
+                  >
+                    {tCommon("title")}
+                    <ArrowUpDown className="size-3.5" aria-hidden />
+                    <span className="sr-only">
+                      Sort {sortDir === "asc" ? "descending" : "ascending"}
+                    </span>
+                  </button>
+                </TableHead>
+                <TableHead>{tCommon("priority")}</TableHead>
+                <TableHead>{tCommon("status")}</TableHead>
+                <TableHead>{tCommon("assignee")}</TableHead>
+                <TableHead>{tCommon("dueDate")}</TableHead>
+                <TableHead className="w-12 text-end">
+                  {tCommon("actions")}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading
+                ? Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={index}>
+                      {Array.from({ length: 6 }).map((__, cell) => (
+                        <TableCell key={cell}>
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                : tasks.map((task) => {
+                    const canEdit = canEditTask(currentUser, task);
+                    const canDelete = canDeleteTask(currentUser, task);
+                    const hasAnyPermission = canEdit || canDelete;
+
+                    return (
+                      <TableRow key={task.id} className="cursor-pointer">
+                        <TableCell className="max-w-xs">
+                          <button
+                            type="button"
+                            className="w-full text-start focus:outline-none"
+                            onClick={() => handleRowClick(task)}
+                          >
+                            <p className="truncate font-medium hover:underline">
+                              {task.title}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {task.description}
+                            </p>
+                          </button>
+                        </TableCell>
+                        <TableCell>
+                          <PriorityBadge priority={task.priority} />
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={task.status} />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {task.assignee ? (
+                              <>
+                                <UserAvatar
+                                  user={task.assignee}
+                                  className="size-6"
+                                />
+                                <span className="text-sm">
+                                  {task.assignee.name}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">
+                                {t("form.unassigned")}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell
+                          className={cn("text-sm", dueDateTone(task.dueDate))}
+                        >
+                          {formatDate(task.dueDate)}
+                        </TableCell>
+                        <TableCell className="text-end">
+                          {hasAnyPermission ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-8"
+                                  aria-label={tCommon("actionsFor", {
+                                    name: task.title,
+                                  })}
+                                >
+                                  <MoreHorizontal className="size-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="w-36"
+                                sideOffset={5}
+                                collisionPadding={10}
+                              >
+                                {canEdit && (
+                                  <DropdownMenuItem
+                                    onSelect={() => onEdit(task)}
+                                  >
+                                    <Pencil className="size-4" />{" "}
+                                    {tCommon("edit")}
+                                  </DropdownMenuItem>
+                                )}
+                                {canDelete && (
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onSelect={() => onDelete(task)}
+                                  >
+                                    <Trash2 className="size-4" />{" "}
+                                    {tCommon("delete")}
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <span className="px-2 text-xs text-muted-foreground">
+                              —
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+            </TableBody>
+          </Table>
       </div>
 
       {/* Mobile Cards View */}
       <div className="flex flex-col gap-3 md:hidden">
         {isLoading
           ? Array.from({ length: 3 }).map((_, index) => (
-            <Card key={index} className="p-4">
-              <Skeleton className="mb-2 h-5 w-3/4" />
-              <Skeleton className="mb-3 h-4 w-full" />
-              <div className="flex gap-2">
-                <Skeleton className="h-6 w-16" />
-                <Skeleton className="h-6 w-16" />
-              </div>
-            </Card>
-          ))
+              <Card key={index} className="p-4">
+                <Skeleton className="mb-2 h-5 w-3/4" />
+                <Skeleton className="mb-3 h-4 w-full" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+              </Card>
+            ))
           : tasks.map((task) => {
-            const allowed = canModifyTask(currentUser, task);
-            return (
-              <Card key={task.id} className="p-4 shadow-soft">
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="mb-0.5 font-medium leading-snug">{task.title}</h3>
-                    {task.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                        {task.description}
-                      </p>
+              const canEdit = canEditTask(currentUser, task);
+              const canDelete = canDeleteTask(currentUser, task);
+              const hasAnyPermission = canEdit || canDelete;
+
+              return (
+                <Card key={task.id} className="p-4 shadow-soft">
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 text-start focus:outline-none"
+                      onClick={() => handleRowClick(task)}
+                    >
+                      <h3 className="mb-0.5 font-medium leading-snug hover:underline">
+                        {task.title}
+                      </h3>
+                      {task.description && (
+                        <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                          {task.description}
+                        </p>
+                      )}
+                    </button>
+                    {hasAnyPermission && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 shrink-0"
+                            aria-label={tCommon("actionsFor", {
+                              name: task.title,
+                            })}
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-36"
+                          sideOffset={5}
+                          collisionPadding={10}
+                        >
+                          {canEdit && (
+                            <DropdownMenuItem onSelect={() => onEdit(task)}>
+                              <Pencil className="size-4" /> {tCommon("edit")}
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete && (
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onSelect={() => onDelete(task)}
+                            >
+                              <Trash2 className="size-4" /> {tCommon("delete")}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </div>
-                  {allowed && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8 shrink-0"
-                          aria-label={tCommon("actionsFor", { name: task.title })}
-                        >
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-36">
-                        <DropdownMenuItem onSelect={() => onEdit(task)}>
-                          <Pencil className="size-4" /> {tCommon("edit")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onSelect={() => onDelete(task)}
-                        >
-                          <Trash2 className="size-4" /> {tCommon("delete")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
 
-              <div className="mb-2 flex flex-wrap gap-2">
-                <PriorityBadge priority={task.priority} />
-                <StatusBadge status={task.status} />
-              </div>
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    <PriorityBadge priority={task.priority} />
+                    <StatusBadge status={task.status} />
+                  </div>
 
-              <div className="flex items-center justify-between gap-3 text-sm">
-                <div className="flex min-w-0 items-center gap-2">
-                  {task.assignee ? (
-                    <>
-                      <UserAvatar
-                        user={task.assignee}
-                        className="size-6"
-                      />
-                      <span className="truncate">{task.assignee.name}</span>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      {t("form.unassigned")}
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <div className="flex min-w-0 items-center gap-2">
+                      {task.assignee ? (
+                        <>
+                          <UserAvatar
+                            user={task.assignee}
+                            className="size-6"
+                          />
+                          <span className="truncate">{task.assignee.name}</span>
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {t("form.unassigned")}
+                        </span>
+                      )}
+                    </div>
+                    <span className={cn("shrink-0", dueDateTone(task.dueDate))}>
+                      {formatDate(task.dueDate)}
                     </span>
-                  )}
-                </div>
-                <span className={cn("shrink-0", dueDateTone(task.dueDate))}>
-                  {formatDate(task.dueDate)}
-                </span>
-              </div>
-            </Card>
-          );
-        })}
+                  </div>
+                </Card>
+              );
+            })}
       </div>
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        open={detailOpen}
+        onOpenChange={(open) => {
+          setDetailOpen(open);
+          if (!open) setSelectedTask(null);
+        }}
+        onUpdate={handleUpdate}
+        onDelete={(task) => {
+          setDetailOpen(false);
+          setSelectedTask(null);
+          onDelete(task);
+        }}
+        users={users}
+      />
     </>
   );
 }

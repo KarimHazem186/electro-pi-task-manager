@@ -92,7 +92,12 @@ export function ProjectCard({
                 <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuContent 
+              align="end" 
+              className="w-40"
+              sideOffset={5}
+              collisionPadding={10}
+            >
               <DropdownMenuItem onSelect={() => onEdit(project)}>
                 <Pencil className="size-4" /> {tCommon("edit")}
               </DropdownMenuItem>
