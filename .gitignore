@@ -58,6 +58,12 @@ android-chrome*.png
 !README.md
 !CONTRIBUTING.md
 
+# Docker documentation (development only)
+DOCKER_*.md
+SETUP_COMPLETE.md
+README.docker.md
+DOCKER_README.md
+
 # Backend documentation files (development only)
 backend/CLOUDINARY_SETUP_GUIDE.md
 backend/FRONTEND_MIGRATION_GUIDE.md
