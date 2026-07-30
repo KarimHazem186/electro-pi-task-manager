@@ -1,0 +1,59 @@
+ELECTRO-PI TASK MANAGER - DOCKER SETUP
+========================================
+
+PREREQUISITES:
+- Docker Desktop installed and running
+- At least 3GB free disk space
+- At least 4GB RAM
+
+QUICK START (3 STEPS):
+----------------------
+
+1. Copy environment file:
+   copy .env.docker.example .env
+
+2. Edit .env file and change these (REQUIRED):
+   JWT_SECRET=your-random-32-character-secret-here
+   JWT_REFRESH_SECRET=another-random-32-character-secret-here
+
+3. Start application:
+   docker-compose up --build
+
+ACCESS:
+-------
+Frontend:  http://localhost:3000
+Backend:   http://localhost:5000/api
+API Docs:  http://localhost:5000/api-docs
+
+COMMON COMMANDS:
+----------------
+Stop:      docker-compose down
+Logs:      docker-compose logs -f
+Restart:   docker-compose restart
+Rebuild:   docker-compose up --build
+Seed DB:   docker-compose exec backend npm run seed
+
+TROUBLESHOOTING:
+----------------
+- Port conflict? Change ports in docker-compose.yml
+- Build failed? Check internet connection and try again
+- Database error? Wait 30 seconds for MongoDB to be ready
+- Clear everything: docker-compose down -v (WARNING: deletes data!)
+
+FIRST TIME BUILD:
+-----------------
+Expected time: 8-12 minutes
+- MongoDB: 30 seconds (download)
+- Backend: 2-3 minutes (npm install)
+- Frontend: 5-8 minutes (npm install + build)
+
+SERVICES:
+---------
+MongoDB:  Port 27017 (Database)
+Backend:  Port 5000  (API + Socket.IO)
+Frontend: Port 3000  (Next.js)
+
+All services run in isolated Docker network.
+Data persists in Docker volume (survives restarts).
+
+VERIFIED & TESTED: 2024

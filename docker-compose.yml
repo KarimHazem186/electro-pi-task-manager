@@ -14,7 +14,6 @@ services:
       - '27017:27017'
     volumes:
       - mongo-data:/data/db
-      - ./backend/src/scripts:/docker-entrypoint-initdb.d:ro
     networks:
       - electro-pi-network
     healthcheck:

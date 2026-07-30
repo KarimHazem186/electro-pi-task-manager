@@ -13,7 +13,7 @@ const verifyCloudinaryConfig = () => {
   const { cloud_name, api_key, api_secret } = cloudinary.config();
   
   if (!cloud_name || !api_key || !api_secret) {
-    console.error('❌ Cloudinary configuration is incomplete');
+    console.warn('⚠️  Cloudinary not configured - image uploads will be disabled');
     return false;
   }
   
